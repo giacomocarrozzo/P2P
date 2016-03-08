@@ -1,0 +1,83 @@
+#:kivy 1.0
+#:import lv kivy.uix.listview
+#:import la kivy.adapters.listadapter
+#:import im kivy.uix.image
+
+<Controller>:
+
+    searchBox: search_box
+    fileList: file_list
+    console: console_log
+    peerList: peer_list
+    progress: progress_bar
+
+    GridLayout:
+        rows: 3
+        padding: 0
+
+        GridLayout:
+            cols: 5
+            padding: 0
+            size_hint_y: 0.1
+
+
+            Button:
+                text: "login"
+                on_press: root.peer.login()
+                height: 5
+                size_hint_x: .6
+
+            Button:
+                text: "logout"
+                on_press: root.peer.logout()
+                size_hint_x: .6
+
+            Button:
+                text: "exit"
+                on_press: root.peer.quit()
+                size_hint_x: .6
+
+            TextInput:
+                id: search_box
+                hint_text: "Esegui una ricerca"
+                size_hint_x: 3
+
+            Button:
+                text: "cerca"
+                on_press: root.peer.searchFile()
+                size_hint_x: .6
+
+        GridLayout:
+            cols: 2
+            orientation: "vertical"
+            padding: 0
+		
+            ListView:
+                id: file_list
+                size_hint: .5,1   
+                                 
+            ScrollView:
+                id: scroll_view
+                Label:
+                    id: console_log
+                    text: ''
+                    padding: 0, 0
+                    halign: 'left'
+                    valign: 'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    text_size: self.width, None
+
+        GridLayout:
+            cols: 2
+            orientation: "vertical"
+            padding: 0
+
+            ListView:
+                id: peer_list
+                size_hint: .5,1 
+                
+
+            ProgressBar:
+                id: progress_bar
+                padding: 10, 10
