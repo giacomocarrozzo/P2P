@@ -3,7 +3,7 @@ import socket
 import time
 import random
 import glob
-
+import os
 class PeerClient(object):
 
 	## azioni ammesse dal peer
@@ -255,7 +255,7 @@ class PeerClient(object):
 				self.connection_socket.send(message)
 				message_type = self.connection_socket.recv(4)
 				num_chunks = self.connection_socket.recv(6)
-				f = open('shared/'+peer["nome"].strip(" "), "wb")
+				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
 				if int(num_chunks) > 0 :
 					print("num chunks " + str(num_chunks))
 					self.interface.progress.max = int(num_chunks)

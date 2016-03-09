@@ -18,6 +18,7 @@ import threading
 import hashlib
 import glob
 import time
+import os
 
 ## fd00:0000:0000:0000:c864:f17c:bb5e:e4d1 giulio
 ## fd00:0000:0000:0000:7481:4a85:5d87:9a52 altri
@@ -80,7 +81,7 @@ class Controller(FloatLayout):
 
 	def calcMD5(self, filename):
 		m = hashlib.md5()
-		readFile = open(str("shared/"+filename) , "r")
+		readFile = open(str(os.path.normcase("shared/"+filename)) , "r")
 		text = readFile.readline()
 		while text:
 			m.update(text)

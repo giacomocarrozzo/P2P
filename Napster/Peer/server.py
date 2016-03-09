@@ -1,6 +1,6 @@
 import threading
 import socket
-##import os
+import os
 
 class PeerToPeer(threading.Thread):
 
@@ -13,7 +13,7 @@ class PeerToPeer(threading.Thread):
 	def run(self):
 		##filename = self.app.context["files_md5"][str(self.md5)]
 		self.filename = self.filename.strip(" ")
-		readFile = open(str("shared/"+self.filename) , "rb")
+		readFile = open(os.path.normcase(str("shared/"+self.filename)) , "rb")
 		##size = os.path.getsize("shared/"+filename)
 		index = 0
 		data = readFile.read(1024)
@@ -32,14 +32,14 @@ class PeerToPeer(threading.Thread):
 		##self.socket.send(message)
 		self.socket.send(message)
 		l = len(str(int(len(bytes))))
-		
+
 		l_string = ("0" * (6 - l)) + str(int(len(bytes)))
 
 		##self.socket.send(str(l_string).encode('utf-8'))
 		self.socket.send(str(l_string))
 
 		for i in range(len(bytes)):
-			
+
 			l_data = ("0" * (5 - len(str(lunghezze[i]))) + str(lunghezze[i]))
 
 			self.socket.send(str(l_data).encode('utf-8'))
@@ -57,7 +57,7 @@ class PeerServer(threading.Thread):
 		self.canRun = True
 		threading.Thread.__init__(self)
 		self.app = app
-		self.peer = app.peer 
+		self.peer = app.peer
 		self.address = app.peer.ip_p2p
 		self.port = int(app.peer.port)
 
@@ -74,7 +74,7 @@ class PeerServer(threading.Thread):
 		##trying to connect to my own port
 		socket.socket(socket.AF_INET6, socket.SOCK_STREAM).connect((self.address, self.port))
 		self.socket.close()
-	
+
 	def run(self):
 		try:
 			self.socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
@@ -90,7 +90,7 @@ class PeerServer(threading.Thread):
 						md5 = socketclient.recv(16)
 						filename = self.app.context["files_md5"][str(md5)]
 						PeerToPeer(filename, socketclient).start()
-						
+
 				except:
 					##self.interface.log("exception inside our server","SUC")
 					return
