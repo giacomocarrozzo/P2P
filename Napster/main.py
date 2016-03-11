@@ -46,12 +46,12 @@ class Controller(FloatLayout):
 
 		self.context['my_ip_v4'] = "192.168.43.179";
 		self.context['my_ip_v6'] = "fe80:0000:0000:0000:8046:4bbd:91ca:b484";
-		self.context['server_ip_v4'] = "";
-		self.context['server_ip_v6'] = "fe80:0000:0000:0000:7a31:c1ff:fecd:7dae";
+		self.context['server_ip_v4'] = "192.168.43.100";
+		self.context['server_ip_v6'] = "fe80:0000:0000:0000:0a00:27ff:fea0:f155";
 		self.context['server_port'] = "3000";
 
 		self.peer = PeerClient()
-		self.peer.set(self, self.context['my_ip_v4']+"|"+self.context['my_ip_v6'], self.context['server_ip_v6'], self.context['server_port'])
+		self.peer.set(self, self.context['my_ip_v4']+"|"+self.context['my_ip_v6'], self.context['server_ip_v6'],self.context['server_ip_v4'], self.context['server_port'])
 
 		self.peerServer = PeerServer(self)
 		self.background = BackgroundService( self )
