@@ -52,7 +52,6 @@ class Controller(FloatLayout):
 
 		self.peer = PeerClient()
 		self.peer.set(self, self.context['my_ip_v4']+"|"+self.context['my_ip_v6'], self.context['server_ip_v6'], self.context['server_port'])
-		##self.peer.set(self, "fd00:0000:0000:0000:5626:96ff:fedb:a4ad","fd00:0000:0000:0000:b89a:58cf:3c32:10a6","3000")
 
 		self.peerServer = PeerServer(self)
 		self.background = BackgroundService( self )

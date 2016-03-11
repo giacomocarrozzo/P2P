@@ -86,24 +86,18 @@ class PeerClient(object):
 		message_type = self.connection_socket.recv(4)
 		session_id = self.connection_socket.recv(16)
 		self.interface.log("TYPE " + message_type)
-		self.interface.log("SESSION ID "+session_id)
-		self.app.receivedLogin( session_id )
+		if session_id == “0000000000000000”:
+			self.interface.log("Utente già registrato o errore)
+		else:
+			self.interface.log("SESSION ID "+session_id)
+			self.app.receivedLogin( session_id )
+			##adding all files
+			files = glob.glob(os.path.normcase("shared/*.*")
+			for f in files:
+				filename = f.split(os.path.normcase("shared/"))[1]
+				md5 = str(self.app.calcMD5(filename))
+				self.addFile(filename,md5)
 		self.connection_socket.close()
-
-		##adding all files
-		files = glob.glob("shared\*.*")
-		for f in files:
-			filename = f.split("shared\\")[1]
-			md5 = str(self.app.calcMD5(filename))
-			self.addFile(filename,md5)
-
-		##self.peer_server = PeerServer(self.ip_p2p , self.port , self)
-		##self.peer_server.start()
-
-		## initializine background service
-		##self.background_service = BackgroundService(self)
-		##self.background_service.start()
-
 
 	def logout(self):
 		if (self.app.context['sessionid']):
@@ -154,9 +148,11 @@ class PeerClient(object):
 
 			message_type = self.connection_socket.recv(4)
 			copy_numbers = self.connection_socket.recv(3)
-
 			self.interface.log("RECEIVED " + message_type)
-			self.interface.log("NUMBER OF COPIES: " + copy_numbers)
+			if copy_numbers == 999:
+				self.interface.log("File non trovato")
+			else:
+				self.interface.log("NUMBER OF COPIES: " + copy_numbers)
 		else:
 			self.interface.log("non hai ancora un sessionid")
 
