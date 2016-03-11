@@ -58,15 +58,11 @@ class PeerServer(threading.Thread):
 		threading.Thread.__init__(self)
 		self.app = app
 		self.peer = app.peer
-		self.address4 = app.peer.ip_p2p.split("|")[0]
-		self.address6 = app.peer.ip_p2p.split("|")[1]
+		self.address = app.peer.ip_p2p.split("|")[1]
 		self.port = int(app.peer.port)
 
-		print(self.port)
-
 		self.setDaemon(True)
-		print("PEER ADDRESS4 "+ self.address4 + ":" + str(self.port), "SUC")
-		print("PEER ADDRESS6 "+ self.address6 + ":" + str(self.port), "SUC")
+		print("PEER ADDRESS "+ self.address + ":" + str(self.port), "SUC")
 
 	def startServer ( self ):
 		##launching peer server
@@ -80,42 +76,28 @@ class PeerServer(threading.Thread):
 		self.socket.close()
 
 	def run(self):
-
 		try:
-			self.socket4 = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-			self.socket6 = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-			self.server_address4 = ( self.address4 , int(self.port))
-			self.server_address6 = ( self.address6 , int(self.port))
-			self.socket4.bind(self.server_address4)
-			self.socket6.bind(self.server_address6)
 
-			self.socket4.listen(1)
-			self.socket6.listen(1)
-			readList=[self.socket4,self.socket6]
+			self.socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM,0)
+			print("provola")
+			self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+			print("provolone")
+			self.server_address = ( self.address , int(self.port))
+			self.socket.bind("::",int(self.port))
+			self.socket.listen(1)
 			while self.canRun:
 				print(".")
-				(sread,swrite, sexc)= select.select(readList,[],[])
-				print("provola")
-				for sock in sread:
-					if sock==self.socket4:
-						print("ipv4 pronto")
-					else:
-						print("ipv6 pronto")
-					try:
-						socketclient, address = self.sock.accept()
-						if sock==self.socket4:
-							print("ipv4 connesso")
-						else:
-							print("ipv6 connesso")
-						msg_type = socketclient.recv(4)
-						if msg_type == "RETR":
-							md5 = socketclient.recv(16)
-							filename = self.app.context["files_md5"][str(md5)]
-							PeerToPeer(filename, socketclient).start()
+				try:
+					socketclient, address = self.socket.accept()
+					msg_type = socketclient.recv(4)
+					if msg_type == "RETR":
+						md5 = socketclient.recv(16)
+						filename = self.app.context["files_md5"][str(md5)]
+						PeerToPeer(filename, socketclient).start()
 
-					except:
-						##self.interface.log("exception inside our server","SUC")
-						return
+				except:
+					##self.interface.log("exception inside our server","SUC")
+					return
 		except:
 			##self.interface.log("something wrong in our peer server. sorry","ERR")
 			return
