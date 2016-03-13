@@ -1,3 +1,4 @@
+from Peer.ipv6utils import ipproto_ipv6
 import threading
 import socket
 import os
