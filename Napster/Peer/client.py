@@ -258,23 +258,31 @@ class PeerClient(object):
 
 				message = "RETR"+str(peer["md5"])
 				self.connection_socket.send(message)
+				print("MESSAGGIO:"+message)
 				message_type = self.connection_socket.recv(4)
+				print("TIPO:"+message_type)
 				num_chunks = self.connection_socket.recv(6)
+				print("NUMERO DI chunks:"+num_chunks)
 				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
 				if int(num_chunks) > 0 :
-					print("num chunks " + str(num_chunks))
 					self.interface.progress.max = int(num_chunks)
 					for i in range(int(num_chunks)):
+						print("leggo lunghezza")
 						len_chunk = self.connection_socket.recv(5)
+						print("len_chunk:"+len_chunk)
 						if (int(len_chunk) > 0):
 							self.interface.progress.value = self.interface.progress.value + 1
+							print(self.interface.progress.value)
+							print("ricevo")
 							chunk = self.connection_socket.recv(int(len_chunk))
 							#f.write(chunk)
 							#print("downloading chunk " + str(len_chunk))
 							while len(chunk) < int(len_chunk):
+								print("minore")
 								new_data = self.connection_socket.recv(int(len_chunk)-len(chunk))
 								#f.write(new_data)
 								chunk = chunk + new_data
+							print("sto scrivendo")
 							f.write(chunk)
 					f.close()
 
