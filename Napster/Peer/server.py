@@ -3,6 +3,7 @@ import socket
 import os
 import pdb
 import contextlib
+from ipv6utils import *
 
 class PeerToPeer(threading.Thread):
 
@@ -15,6 +16,7 @@ class PeerToPeer(threading.Thread):
 	def run(self):
 		##filename = self.app.context["files_md5"][str(self.md5)]
 		self.filename = self.filename.strip(" ")
+		print("Dentro run thread")
 		readFile = open(os.path.normcase(str("shared/"+self.filename)) , "rb")
 		##size = os.path.getsize("shared/"+filename)
 		index = 0
@@ -128,9 +130,13 @@ class PeerServer(threading.Thread):
 				socketclient, address = self.sock.accept()
 				print("***Request accepted***")
 				msg_type = socketclient.recv(4)
+				print("Print1")
 				if msg_type == "RETR":
+					print("inside RETR")
 					md5 = socketclient.recv(16)
+					print("Ricevuto md5: " + str(md5))
 					filename = self.app.context["files_md5"][str(md5)]
+					print("Filename: " + str(filename))
 					PeerToPeer(filename, socketclient).start()
 			except:
 				print("Something went WRONG, exception raised")
