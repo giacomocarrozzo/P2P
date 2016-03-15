@@ -1,6 +1,8 @@
 import threading
 import socket
 import os
+import pdb
+import contextlib
 
 class PeerToPeer(threading.Thread):
 
@@ -58,11 +60,16 @@ class PeerServer(threading.Thread):
 		threading.Thread.__init__(self)
 		self.app = app
 		self.peer = app.peer
-		self.address = app.peer.ip_p2p.split("|")[1]
+		## Salva gli indirizzi IPv4 e IPv6 separandoli
+		self.address4 = app.peer.ip_p2p.split("|")[0]
+		self.address6 = app.peer.ip_p2p.split("|")[1]
 		self.port = int(app.peer.port)
 
+		print(self.port)
+
 		self.setDaemon(True)
-		print("PEER ADDRESS "+ self.address + ":" + str(self.port), "SUC")
+		print("PEER ADDRESS4 "+ self.address4 + ":" + str(self.port), "SUC")
+		print("PEER ADDRESS6 "+ self.address6 + ":" + str(self.port), "SUC")
 
 	def startServer ( self ):
 		##launching peer server
@@ -75,29 +82,57 @@ class PeerServer(threading.Thread):
 		socket.socket(socket.AF_INET6, socket.SOCK_STREAM).connect((self.address, self.port))
 		self.socket.close()
 
-	def run(self):
+	def dual_ipv_support(self):
+		# Returns true if kernel allows creating a socket which is able to listen both IPv4 and IPv6 connections
 		try:
+			if self.sock is not None:
+				return not self.sock.getsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY)
+			else:
+				self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+				# Execute block and then close the socket
+				with contextlib.closing(self.socket):
+					self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
+					return True
+		except socket.error:
+			return False
 
-			self.socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM,0)
-			print("provola")
-			self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
-			print("provolone")
-			self.server_address = ( self.address , int(self.port))
-			self.socket.bind("::",int(self.port))
-			self.socket.listen(1)
-			while self.canRun:
-				print(".")
-				try:
-					socketclient, address = self.socket.accept()
-					msg_type = socketclient.recv(4)
-					if msg_type == "RETR":
-						md5 = socketclient.recv(16)
-						filename = self.app.context["files_md5"][str(md5)]
-						PeerToPeer(filename, socketclient).start()
+	def run(self):
+		# Socket creation, binding and listening
+		info = socket.getaddrinfo(None, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+		info.sort(key=lambda x: x[0] == socket.AF_INET6, reverse=True)
+		for res in info:
+			af, socktype, proto, canonname, sa = res
+			self.sock = None
+			try:
+				self.sock = socket.socket(af, socktype, proto)
+				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+				# If supported set IPV6_V6ONLY flag to FALSE
+				if af == socket.AF_INET6 and self.dual_ipv_support():
+					self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
+					print("Socket is listening. IPv6 and IPv4 BOTH supported")
+					print("IP: " + sa[0])
+					print("Port: " + str(sa[1]))
+				self.sock.bind(sa)
+				self.sock.listen(1)
+				break	
+			except socket.error as msg:
+				continue
+		# Error check
+		if self.sock is None:
+			print 'could not open socket'
+			sys.exit(1)
 
-				except:
-					##self.interface.log("exception inside our server","SUC")
-					return
-		except:
-			##self.interface.log("something wrong in our peer server. sorry","ERR")
-			return
+		while self.canRun:
+			print(".")
+			try:
+				socketclient, address = self.sock.accept()
+				print("***Request accepted***")
+				msg_type = socketclient.recv(4)
+				if msg_type == "RETR":
+					md5 = socketclient.recv(16)
+					filename = self.app.context["files_md5"][str(md5)]
+					PeerToPeer(filename, socketclient).start()
+			except:
+				print("Something went WRONG, exception raised")
+				#self.interface.log("exception inside our server","SUC")
+				return
