@@ -54,13 +54,12 @@ class PeerClient(object):
 		pass
 
 	def login(self):
-		if random.randint(0,1)==0:
+		if 1:
 			self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 			self.connection_socket.connect(self.directory4)
 		else:
 			self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 			self.connection_socket.connect(self.directory6)
-
  		##mandiamo il messaggio di login
 		message = "LOGI"+str(self.ip_p2p)+"0"+str(self.port)
 		self.interface.log(message)
@@ -79,16 +78,8 @@ class PeerClient(object):
 				filename = f.split(os.path.normcase("shared/"))[1]
 				md5 = str(self.app.calcMD5(filename))
 				self.addFile(filename,md5)
-		self.connection_socket.close()
 
 	def logout(self):
-		if (self.app.context['sessionid']):
-			if random.randint(0,1)==0:
-				self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-				self.connection_socket.connect(self.directory4)
-			else:
-				self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-				self.connection_socket.connect(self.directory6)
 			##mandiamo messsaggio di logout
 			message = "LOGO"+str(self.app.context['sessionid'])
 			self.interface.log("SENDING LOGOUT " + message)
@@ -99,16 +90,9 @@ class PeerClient(object):
 			self.interface.log("RECEIVED " + message_type)
 			self.interface.log("REMOVED " + file_deleted + " FILES")
 
-			self.connection_socket.close()
 
 	def addFile(self, filename, md5):
 		if self.app.context["sessionid"]:
-			if random.randint(0,1)==0:
-				self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-				self.connection_socket.connect(self.directory4)
-			else:
-				self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-				self.connection_socket.connect(self.directory6)
 			##aggiungiamo un file
 			temp = filename
 			if len(temp) < 100:
@@ -127,16 +111,8 @@ class PeerClient(object):
 			self.interface.log("non hai ancora un sessionid")
 
 	def removeFile(self, filename, md5):
-
-		if self.app.context["sessionid"]:
-			if random.randint(0,1)==0:
-				self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-				self.connection_socket.connect(self.directory4)
-			else:
-				self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-				self.connection_socket.connect(self.directory6)
 			##rimozione un file
-
+		if self.app.context["sessionid"]:
 			message = "DELF"+self.app.context["sessionid"]+md5
 			self.connection_socket.send(message)
 
@@ -158,13 +134,7 @@ class PeerClient(object):
 
 			if self.app.context["sessionid"]:
 				print("about to send connection")
-				if random.randint(0,1)==0:
-					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-					self.connection_socket.connect(self.directory4)
-				else:
-					self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-					self.connection_socket.connect(self.directory6)
-				##cerchiamo un file
+
 				temp = searchString
 				if len(temp) < 20:
 					while len(temp) < 20:
@@ -192,15 +162,16 @@ class PeerClient(object):
 						file_md5 = self.connection_socket.recv(16)
 						nome = self.connection_socket.recv(100)
 						copie = int(self.connection_socket.recv(3))
-						s = str(nome) + "\t #copie" + str(copie)
-						print(str(file_md5) + " - " + str(nome) + " - " + str(copie) )
+						s = str(nome) + "\t #copie:" + str(copie)
+						print(s + " md5:" + str(file_md5))
 						self.interface.log(s + " " + str(file_md5))
 						self.app.context["peers_addr"].append(s)
 						i += 1
+
 						for c in range(copie):
 							print("stampiamo i peer")
-							ip = self.connection_socket.recv(39)
-							port = int(self.connection_socket.recv(5))
+							ip = self.connection_socket.recv(55)
+							port = self.connection_socket.recv(5)
 							print("peer " + str(ip) + " - " + str(port) )
 							self.interface.log("\t" + str(ip) + " " + str(port))
 							self.app.context["peers_addr"].append(str(ip))
@@ -216,13 +187,11 @@ class PeerClient(object):
 					print("ALREADY SET self.isready " + str(self.isready))
 					self.interface.peerList.adapter.data = self.app.context["peers_addr"]
 					self.interface.peerList.populate()
-					self.connection_socket.close()
 
 				else:
 					print("sono appena fallito")
 					self.interface.peerList.adapter.data = list()
 					self.interface.peerList.populate()
-					self.connection_socket.close()
 					self.interface.log("NON HO TROVATO NESSUN FILE." , "ERR")
 			else:
 				self.interface.log("non hai ancora un sessionid")
@@ -238,6 +207,7 @@ class PeerClient(object):
 			i = self.app.context["peers_addr"].index(s)
 			print("INSIDE DOWNLOAD ")
 			key = str(i)+"_"+str(s)
+			print(key)
 			if(self.app.context["downloads_available"][str(key)]):
 				peer = self.app.context["downloads_available"][str(key)]
 				print(peer)
@@ -245,41 +215,10 @@ class PeerClient(object):
 
 				print(destination)
 				print(peer["md5"])
-				if random.randint(0,1)==0:
-					destination = (s4 , int(peer["porta"]))
-					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-					self.connection_socket.connect(destination)
-				else:
-					destination = (s6 , int(peer["porta"]))
-					self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-					self.connection_socket.connect(destination)
-				message = "RETR"+str(peer["md5"])
-				self.connection_socket.send(message)
-				message_type = self.connection_socket.recv(4)
-				num_chunks = self.connection_socket.recv(6)
-				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
-				if int(num_chunks) > 0 :
-					print("num chunks " + str(num_chunks))
-					self.interface.progress.max = int(num_chunks)
-					for i in range(int(num_chunks)):
-						len_chunk = self.connection_socket.recv(5)
-						if (int(len_chunk) > 0):
-							self.interface.progress.value = self.interface.progress.value + 1
-							chunk = self.connection_socket.recv(int(len_chunk))
-							#f.write(chunk)
-							#print("downloading chunk " + str(len_chunk))
-							while len(chunk) < int(len_chunk):
-								new_data = self.connection_socket.recv(int(len_chunk)-len(chunk))
-								#f.write(new_data)
-								chunk = chunk + new_data
-							f.write(chunk)
-					f.close()
 
-				self.connection_socket.close()
-				self.interface.progress.value = 0
 
 				## scriviamo alla directory che abbiamo finito il download
-				if random.randint(0,1)==0:
+				if 1:
 					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 					self.connection_socket.connect(self.directory4)
 				else:
