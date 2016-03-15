@@ -86,12 +86,12 @@ class PeerServer(threading.Thread):
 		# Returns true if kernel allows creating a socket which is able to listen both IPv4 and IPv6 connections
 		try:
 			if self.sock is not None:
-				return not self.sock.getsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY)
+				return not self.sock.getsockopt(ipproto_ipv6(), ipproto_ipv6only())
 			else:
 				self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 				# Execute block and then close the socket
 				with contextlib.closing(self.socket):
-					self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
+					self.sock.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
 					return True
 		except socket.error:
 			return False
@@ -108,13 +108,13 @@ class PeerServer(threading.Thread):
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 				# If supported set IPV6_V6ONLY flag to FALSE
 				if af == socket.AF_INET6 and self.dual_ipv_support():
-					self.sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
+					self.sock.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
 					print("Socket is listening. IPv6 and IPv4 BOTH supported")
 					print("IP: " + sa[0])
 					print("Port: " + str(sa[1]))
 				self.sock.bind(sa)
 				self.sock.listen(1)
-				break	
+				break
 			except socket.error as msg:
 				continue
 		# Error check

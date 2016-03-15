@@ -60,30 +60,24 @@ def ipproto_ipv6():
             # Unknown value
             raise
 
-
-def set_double_stack(socket_obj, double_stack=True):
+def ipproto_ipv6only():
     """
-    Sets up the IPv6 double stack according to the operating system
+    Returns the value of socket.IPPROTO_IPV6
 
-    :param socket_obj: A socket object
-    :param double_stack: If True, use the double stack, else only support IPv6
-    :raise AttributeError: Python or system doesn't support V6
-    :raise socket.error: Error setting up the double stack value
+    :return: The value of socket.IPPROTO_IPV6
+    :raise AttributeError: Python or system doesn't support IPv6
     """
     try:
         # Use existing value
-        opt_ipv6_only = socket.IPV6_V6ONLY
+        return socket.IPV6_V6ONLY
     except AttributeError:
         # Use "known" value
         if os.name == 'nt':
             # Windows: see ws2ipdef.h
-            opt_ipv6_only = 27
+            return 27
         elif platform.system() == 'Linux':
             # Linux: see linux/in6.h (in recent kernels)
-            opt_ipv6_only = 26
+            return 26
         else:
             # Unknown value: do nothing
             raise
-
-    # Setup the socket (can raise a socket.error)
-    socket_obj.setsockopt(ipproto_ipv6(), opt_ipv6_only, int(not double_stack))

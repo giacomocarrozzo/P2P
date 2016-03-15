@@ -42,11 +42,11 @@ class Controller(FloatLayout):
 		self.context['file_names'] = list()
 		self.context["peers_addr"] = list()
 		self.adapter = la.ListAdapter(data=self.context['file_names'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
-		self.peerAdapter = la.ListAdapter(data=self.context['peers_addr'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
+		self.peerAdapter = la.ListAdapter(data=self.context['peers_addr'],selection_mode='single',allow_empty_selection=True,cls=lv.ListItemButton)
 
-		self.context['my_ip_v4'] = "172.20.10.6";
+		self.context['my_ip_v4'] = "192.168.043.179";
 		self.context['my_ip_v6'] = "fe80:0000:0000:0000:8046:4bbd:91ca:b484";
-		self.context['server_ip_v4'] = "172.20.10.5";
+		self.context['server_ip_v4'] = "192.168.043.092";
 		self.context['server_ip_v6'] = "fe80:0000:0000:0000:0a00:27ff:fea0:f155";
 		self.context['server_port'] = "3000";
 
