@@ -99,6 +99,7 @@ class PeerServer(threading.Thread):
 			return False
 
 	def run(self):
+
 		# Socket creation, binding and listening
 		info = socket.getaddrinfo(None, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
 		info.sort(key=lambda x: x[0] == socket.AF_INET6, reverse=True)
@@ -106,14 +107,18 @@ class PeerServer(threading.Thread):
 			af, socktype, proto, canonname, sa = res
 			self.sock = None
 			try:
+
 				self.sock = socket.socket(af, socktype, proto)
 				self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 				# If supported set IPV6_V6ONLY flag to FALSE
-				if af == socket.AF_INET6 and self.dual_ipv_support():
+				if af == socket.AF_INET6:
 					self.sock.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
 					print("Socket is listening. IPv6 and IPv4 BOTH supported")
 					print("IP: " + sa[0])
 					print("Port: " + str(sa[1]))
+				else:
+					print("suca")
 				self.sock.bind(sa)
 				self.sock.listen(1)
 				break
@@ -121,7 +126,7 @@ class PeerServer(threading.Thread):
 				continue
 		# Error check
 		if self.sock is None:
-			print 'could not open socket'
+			print ('could not open socket')
 			sys.exit(1)
 
 		while self.canRun:

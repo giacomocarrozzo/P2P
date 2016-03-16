@@ -54,10 +54,12 @@ class PeerClient(object):
 		pass
 
 	def login(self):
-		if 1:
+		if random.randint(0,1)==0:
+			print("ipv4")
 			self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 			self.connection_socket.connect(self.directory4)
 		else:
+			print("ipv6")
 			self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 			self.connection_socket.connect(self.directory6)
 
@@ -83,10 +85,12 @@ class PeerClient(object):
 
 	def logout(self):
 		if (self.app.context['sessionid']):
-			if 1:
+			if random.randint(0,1)==0:
+				print("ipv4")
 				self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 				self.connection_socket.connect(self.directory4)
 			else:
+				print("ipv6")
 				self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 				self.connection_socket.connect(self.directory6)
 			##mandiamo messsaggio di logout
@@ -103,10 +107,12 @@ class PeerClient(object):
 
 	def addFile(self, filename, md5):
 		if self.app.context["sessionid"]:
-			if 1:
+			if random.randint(0,1)==0:
+				print("ipv4")
 				self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 				self.connection_socket.connect(self.directory4)
 			else:
+				print("ipv6")
 				self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 				self.connection_socket.connect(self.directory6)
 			##aggiungiamo un file
@@ -129,10 +135,12 @@ class PeerClient(object):
 	def removeFile(self, filename, md5):
 
 		if self.app.context["sessionid"]:
-			if 1:
+			if random.randint(0,1)==0:
+				print("ipv4")
 				self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 				self.connection_socket.connect(self.directory4)
 			else:
+				print("ipv6")
 				self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 				self.connection_socket.connect(self.directory6)
 			##rimozione un file
@@ -158,10 +166,12 @@ class PeerClient(object):
 
 			if self.app.context["sessionid"]:
 				print("about to send connection")
-				if 1:
+				if random.randint(0,1)==0:
+					print("ipv4")
 					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 					self.connection_socket.connect(self.directory4)
 				else:
+					print("ipv6")
 					self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 					self.connection_socket.connect(self.directory6)
 				##cerchiamo un file
@@ -245,11 +255,13 @@ class PeerClient(object):
 				##possiamo far partire il download del file
 				print("MD5:"+peer["md5"])
 
-				if 1:
+				if random.randint(0,1)==0:
+					print("ipv4")
 					destination = (s4 , int(peer["porta"]))
 					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 					self.connection_socket.connect(destination)
 				else:
+					print("ipv6")
 					destination = (s6 , int(peer["porta"]))
 					self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 					self.connection_socket.connect(destination)
@@ -285,19 +297,22 @@ class PeerClient(object):
 							print("sto scrivendo")
 							f.write(chunk)
 					f.close()
-
+				print("fine")
 				self.connection_socket.close()
 				self.interface.progress.value = 0
 
 				## scriviamo alla directory che abbiamo finito il download
-				if 1:
+				if random.randint(0,1)==0:
+					print("ipv4")
 					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 					self.connection_socket.connect(self.directory4)
 				else:
+					print("ipv6")
 					self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 					self.connection_socket.connect(self.directory6)
 
 				message = "DREG" + self.app.context["sessionid"] + peer["md5"]
+				print(message)
 				self.connection_socket.send(message)
 
 				ack = self.connection_socket.recv(4)
