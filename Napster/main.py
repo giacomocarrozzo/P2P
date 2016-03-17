@@ -46,8 +46,8 @@ class Controller(FloatLayout):
 
 		self.context['my_ip_v4'] = "192.168.043.179";
 		self.context['my_ip_v6'] = "fe80:0000:0000:0000:8046:4bbd:91ca:b484";
-		self.context['server_ip_v4'] = "192.168.043.092";
-		self.context['server_ip_v6'] = "fe80:0000:0000:0000:0a00:27ff:fea0:f155";
+		self.context['server_ip_v4'] = "192.168.043.174";
+		self.context['server_ip_v6'] = "fe80:0000:0000:0000:020c:29ff:fe01:2626";
 		self.context['server_port'] = "3000";
 
 		self.peer = PeerClient()
@@ -87,7 +87,7 @@ class Controller(FloatLayout):
 			text = readFile.readline()
 
 		digest = m.hexdigest()
-		digest = digest[:16]
+		digest = digest[:32]
 		return digest
 
 	def receivedLogin( self, sessionId ):

@@ -138,7 +138,7 @@ class PeerServer(threading.Thread):
 				print("Print1")
 				if msg_type == "RETR":
 					print("inside RETR")
-					md5 = socketclient.recv(16)
+					md5 = socketclient.recv(32)
 					print("Ricevuto md5: " + str(md5))
 					filename = self.app.context["files_md5"][str(md5)]
 					print("Filename: " + str(filename))

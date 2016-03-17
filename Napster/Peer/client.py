@@ -199,7 +199,7 @@ class PeerClient(object):
 					for f in range(num):
 						print("stampiamo file")
 						print("INSIDE FOR "+ str(i))
-						file_md5 = self.connection_socket.recv(16)
+						file_md5 = self.connection_socket.recv(32)
 						nome = self.connection_socket.recv(100)
 						copie = int(self.connection_socket.recv(3))
 						s = str(nome) + "\t #copie" + str(copie)
