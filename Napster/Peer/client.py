@@ -54,7 +54,7 @@ class PeerClient(object):
 		pass
 
 	def login(self):
-		if random.randint(0,1)==0:
+		if 1:
 			print("ipv4")
 			self.dir_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 			self.dir_socket.connect(self.directory4)
@@ -85,7 +85,7 @@ class PeerClient(object):
 
 	def logout(self):
 		if (self.app.context['sessionid']):
-			if random.randint(0,1)==0:
+			if 1:
 				print("ipv4")
 				self.dir_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 				self.dir_socket.connect(self.directory4)
@@ -107,7 +107,7 @@ class PeerClient(object):
 
 	def addFile(self, filename, md5):
 		if self.app.context["sessionid"]:
-			if random.randint(0,1)==0:
+			if 1:
 				print("ipv4")
 				self.dir_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 				self.dir_socket.connect(self.directory4)
@@ -135,7 +135,7 @@ class PeerClient(object):
 	def removeFile(self, filename, md5):
 
 		if self.app.context["sessionid"]:
-			if random.randint(0,1)==0:
+			if 1:
 				print("ipv4")
 				self.dir_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 				self.dir_socket.connect(self.directory4)
@@ -166,7 +166,7 @@ class PeerClient(object):
 
 			if self.app.context["sessionid"]:
 				print("about to send connection")
-				if random.randint(0,1)==0:
+				if 1:
 					print("ipv4")
 					self.dir_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 					self.dir_socket.connect(self.directory4)
@@ -255,7 +255,7 @@ class PeerClient(object):
 				##possiamo far partire il download del file
 				print("MD5:"+peer["md5"])
 
-				if random.randint(0,1)==0:
+				if 1:
 					print("ipv4")
 					destination = (s4 , int(peer["porta"]))
 					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
@@ -275,7 +275,7 @@ class PeerClient(object):
 				num_chunks = self.connection_socket.recv(6)
 				print("NUMERO DI chunks:"+num_chunks)
 				# Aggiungiamo al contesto per evitare che il background service lo veda
-				self.app.context['files'].append(os.path.normcase("shared/" + peer.["nome"].strip(" ")))
+				self.app.context['files'].append(os.path.normcase("shared/" + peer["nome"].strip(" ")))
 				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
 				if int(num_chunks) > 0 :
 					self.interface.progress.max = int(num_chunks)
@@ -304,28 +304,28 @@ class PeerClient(object):
 				self.interface.progress.value = 0
 
 				## scriviamo alla directory che abbiamo finito il download
-				if random.randint(0,1)==0:
+				if 1:
 					print("ipv4")
-					self.dir_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-					self.dir_socket.connect(self.directory4)
+					self.connection_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+					self.connection_socket.connect(self.directory4)
 				else:
 					print("ipv6")
-					self.dir_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-					self.dir_socket.connect(self.directory6)
+					self.connection_socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+					self.connection_socket.connect(self.directory6)
 
 				message = "DREG" + self.app.context["sessionid"] + peer["md5"]
 				print(message)
-				self.dir_socket.send(message)
+				self.connection_socket.send(message)
 
-				ack = self.dir_socket.recv(4)
-				n_down = self.dir_socket.recv(5)
+				ack = self.connection_socket.recv(4)
+				n_down = self.connection_socket.recv(5)
 				self.interface.log("RECEIVED "+ str(ack))
 				self.interface.log("#DOWNLOAD " + str(n_down))
-				self.dir_socket.close()
+				self.connection_socket.close()
 
 				# Forziamo l'aggiunta del download alla nostra lista di file
-				self.interface.log("ADDED " + filename_add + " WITH MD5 " + md5_add, "SUC")
-				self.peer.addFile(self.peer["nome"].split(" "),self.peer["md5"])
+				#self.interface.log("ADDED " + peer["nome"].split(" ") + " WITH MD5 " + peer["md5"], "SUC")
+				self.addFile(peer["nome"].split(" ")[0],str(peer["md5"]))
 			else:
 				print("NOT AVAILABLE")
 		except:

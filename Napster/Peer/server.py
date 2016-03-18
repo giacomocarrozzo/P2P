@@ -16,7 +16,7 @@ class PeerToPeer(threading.Thread):
 	def run(self):
 		##filename = self.app.context["files_md5"][str(self.md5)]
 		self.filename = self.filename.strip(" ")
-		print("Dentro run thread")
+		print("Dentro run thread, stanno scaricando "+self.filename)
 		readFile = open(os.path.normcase(str("shared/"+self.filename)) , "rb")
 		##size = os.path.getsize("shared/"+filename)
 		index = 0
@@ -50,6 +50,7 @@ class PeerToPeer(threading.Thread):
 			self.socket.sendall(bytes[i])
 
 		self.socket.close()
+		print("Finito il download di "+self.filename)
 		return
 
 
@@ -135,7 +136,6 @@ class PeerServer(threading.Thread):
 				socketclient, address = self.sock.accept()
 				print("***Request accepted***")
 				msg_type = socketclient.recv(4)
-				print("Print1")
 				if msg_type == "RETR":
 					print("inside RETR")
 					md5 = socketclient.recv(32)

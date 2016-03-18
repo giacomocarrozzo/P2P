@@ -44,7 +44,7 @@ class BackgroundService(threading.Thread):
 
 			if len(to_add) > 0  :
 				for f in to_add:
-					filename_add = f.split(os.path.normcase("red/"))[1]
+					filename_add = f.split(os.path.normcase("shared/"))[1]
 					md5_add = self.app.calcMD5(filename_add)
 					self.interface.log("ADDED " + filename_add + " WITH MD5 " + md5_add, "SUC")
 					self.peer.addFile(filename_add,md5_add)
