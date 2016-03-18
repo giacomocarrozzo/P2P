@@ -38,16 +38,17 @@ class Controller(FloatLayout):
 	def __init__ (self, **kwargs):
 		super(Controller, self).__init__(**kwargs)
 
+		self.dirSemaphore = threading.Lock()
 		self.context = dict()
 		self.context['file_names'] = list()
 		self.context["peers_addr"] = list()
 		self.adapter = la.ListAdapter(data=self.context['file_names'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
 		self.peerAdapter = la.ListAdapter(data=self.context['peers_addr'],selection_mode='single',allow_empty_selection=True,cls=lv.ListItemButton)
 
-		self.context['my_ip_v4'] = "192.168.043.179";
-		self.context['my_ip_v6'] = "fe80:0000:0000:0000:8046:4bbd:91ca:b484";
-		self.context['server_ip_v4'] = "192.168.043.174";
-		self.context['server_ip_v6'] = "fe80:0000:0000:0000:020c:29ff:fe01:2626";
+		self.context['my_ip_v4'] = "172.030.014.002";
+		self.context['my_ip_v6'] = "fc00:0000:0000:0000:0000:0000:0014:0002";
+		self.context['server_ip_v4'] = "192.168.043.092";
+		self.context['server_ip_v6'] = "fe80:0000:0000:0000:021e:2aff:feb8:ce0c";
 		self.context['server_port'] = "3000";
 
 		self.peer = PeerClient()
