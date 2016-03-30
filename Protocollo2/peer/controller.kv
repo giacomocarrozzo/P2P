@@ -1,0 +1,83 @@
+#:kivy 1.0
+#:import lv kivy.uix.listview
+#:import la kivy.adapters.listadapter
+#:import im kivy.uix.image
+
+<Controller>:
+
+    searchBox: search_box
+    fileList: file_list
+    console: console_log
+    peerList: peer_list
+    progress: progress_bar
+    nearAddr: address
+    nearPort: port
+
+    GridLayout:
+        rows: 3
+        padding: 0
+
+        GridLayout:
+            cols: 5
+            padding: 0
+            size_hint_y: 0.1
+
+            TextInput:
+                id: address
+                hint_text: "IP"
+                size_hint_x: 1
+
+            TextInput:
+                id: port
+                hint_text: "PORT"
+                size_hint_x: 1
+
+            Button:
+                text: "ADD"
+                on_press: root.peer.addNear()
+                size_hint_x: .6
+
+            TextInput:
+                id: search_box
+                hint_text: "Esegui una ricerca"
+                size_hint_x: 2
+
+            Button:
+                text: "cerca"
+                on_press: root.peer.searchFile()
+                size_hint_x: .6
+
+        GridLayout:
+            cols: 2
+            orientation: "vertical"
+            padding: 0
+
+            ListView:
+                id: file_list
+                size_hint: .5,1   
+                                 
+            ScrollView:
+                id: scroll_view
+                Label:
+                    id: console_log
+                    text: ''
+                    padding: 10, 10
+                    halign: 'left'
+                    valign: 'top'
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    text_size: self.width, None
+
+        GridLayout:
+            cols: 2
+            orientation: "vertical"
+            padding: 0
+
+            ListView:
+                id: peer_list
+                size_hint: .5,1 
+                
+
+            ProgressBar:
+                id: progress_bar
+                padding: 10, 10
