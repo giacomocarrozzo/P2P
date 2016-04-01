@@ -305,7 +305,7 @@ class Receiver(threading.Thread):
 					socketclient, address = self.socket.accept()
 					msg_type = socketclient.recv(4)
 					
-					if msg_type == "RETR": # RETR e' gestito da PeerClient
+					if msg_type == "RETR": # RETR è gestito da PeerClient
 						print("RETR received")
 						self.app.log("RETR received")
 						md5 = socketclient.recv(32)
