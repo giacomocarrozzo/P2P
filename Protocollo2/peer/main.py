@@ -50,7 +50,7 @@ class Controller(FloatLayout):
 		self.context['peers_index'] = 0
 		self.context['file_names'] = list()
 		self.context["peers_addr"] = list()
-		self.adapter = la.ListAdapter(data=self.context['file_names'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
+		self.adapter = la.ListAdapter(data=self.context['file_names'],selection_mode='single',allow_empty_selection=True,cls=lv.ListItemButton)
 		self.peerAdapter = la.ListAdapter(data=self.context['peers_addr'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
 		##creiamo il database
 		self.db = Database(self)
