@@ -150,6 +150,9 @@ class PeerClient(object):
 				self.connection_socket.send(message)
 				message_type = self.connection_socket.recv(4)
 				num_chunks = self.connection_socket.recv(6)
+
+				# Aggiungiamo il file al contesto per evitare che il background service lo veda
+				self.app.context['files'].append(os.path.normcase("shared/" + peer["nome"].strip(" ")))
 				f = open('shared/'+peer["nome"].strip(" "), "wb")
 				if int(num_chunks) > 0 :
 					self.app.progress.max = int(num_chunks)
