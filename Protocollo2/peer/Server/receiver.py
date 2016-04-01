@@ -2,6 +2,8 @@ import threading
 import socket
 import time
 import sys
+import random
+from ipv6utils import *
 ##import os
 
 class PeerToPeer(threading.Thread):
@@ -28,27 +30,20 @@ class PeerToPeer(threading.Thread):
 			bytes = list()
 			print("ABOUT TO READ FILE")
 			while data:
-				##index += 1
-				##messagetemp = messagetemp +"0"+str(len(data)) + str(data)
 				lunghezze.append(str(len(data)))
 				bytes.append(data)
 				print("letti byte " + str(len(data)))
 				data = readFile.read(1024)
 			## ha terminato di leggere il file
-			##message = message + str(index) + messagetemp
-			##self.socket.send(message)
 			print("about to send message " + message)
 			self.socket.send(message)
 			l = len(str(int(len(bytes))))
 			
 			l_string = ("0" * (6 - l)) + str(int(len(bytes)))
-
-			##self.socket.send(str(l_string).encode('utf-8'))
 			print("about to send message " + str(l_string))
 			self.socket.send(str(l_string))
 
 			for i in range(len(bytes)):
-				
 				l_data = ("0" * (5 - len(str(lunghezze[i]))) + str(lunghezze[i]))
 				print("sending data to peer " + str(l_data) + " - " + str(l_data).encode('utf-8'))
 				self.socket.send(str(l_data).encode('utf-8'))
@@ -57,7 +52,7 @@ class PeerToPeer(threading.Thread):
 			self.socket.close()
 			return
 		except:
-			print("SONO ANDATO IN ECCEZZIONE ZIO CAN")
+			print("error during upload")
 			print(sys.exc_info()[0])
 			print(sys.exc_info()[1])
 			print(sys.exc_info()[2])
@@ -74,31 +69,54 @@ class PacketHandler(threading.Thread):
 		self.port = port
 
 	def run(self):
+
+		# Ricevuto NEAR: richiesta vicini
 		if self.type == "NEAR":
 			print()
 			self.app.log("NEAR received")
 			##abbiamo ricevuto richiesta di vicini
 			packetID = self.socket.recv(16)
-			ip = self.socket.recv(39)
+			ip = self.socket.recv(55)
 			port = self.socket.recv(5)
 			ttl = self.socket.recv(2)
 			res = self.app.db.getPacchetto(packetID)
-			s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-			s.connect((ip, int(port)))
+
+			# Random IPv4/v6 connection
+			if random.randint(0,1)==0:
+				print("ipv4")
+				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				ip_v4 = ip.split("|")[0]
+				s.connect((ip_v4, int(port)))
+			else:
+				print("ipv6")
+				s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+				ip_v4 = ip.split("|")[1]
+				s.connect((ip_v4, int(port)))
 			port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
 			message = "ANEA" + packetID + self.address + port_message
 			s.send(message)
 			s.close()
+
+			# Pacchetto nuovo
 			if len(res) == 0:
-				self.app.db.insertPacchetto(packetID, ip, port)
-				if int(ttl) > 1:
+				self.app.db.insertPacchetto(packetID, ip, port) # lo salvo nel DB
+				if int(ttl) > 1: # devo ritrasmetterlo
 					peers = self.app.db.getAllPeers()
 					if len(peers) != 0:
-						for i in range(len(peers)):
+						for i in range(len(peers)): # rimando la near ai miei vicini
 							p_ip , p_port = peers[i]
-							#port_message = ("0" * (5-len(str(p_port)))) + str(p_port)
-							s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-							s.connect((p_ip, int(p_port)))
+
+							# Random IPv4/v6 connection 
+							if random.randint(0,1)==0:
+								print("ipv4")
+								s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+								p_ip = p_ip.split("|")[0]
+								s.connect((p_ip, int(p_port)))
+							else:
+								print("ipv6)
+								s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+								p_ip = p_ip.split("|")[1]
+								s.connect(p_ip, int(p_port))
 							ttl = str(int(ttl) - 1)
 							ttl = ("0" * (2-len(ttl))) + ttl
 							message = "NEAR" + packetID + ip + port + ttl
@@ -107,44 +125,53 @@ class PacketHandler(threading.Thread):
 							s.send(message)
 						s.close()
 			self.socket.close()
+
+		# Ricevuto ANEA: trovato un vicino
 		if self.type == "ANEA":
 			print("ANEA received")
 			self.app.log("ANEA received")
-			##ci stanno rispondendo con dei vicini
-			#recupero i miei vicini e controllo di averne meno di tre
+			# Recupero i miei vicini e controllo di averne al max tre
 			peers = self.app.db.getAllPeers()
 			if len(peers) < 4:
 				packetID = self.socket.recv(16)
-				ip = self.socket.recv(39)
+				ip = self.socket.recv(55)
 				port = self.socket.recv(5)
 				res = self.app.db.getPacchetto(packetID)
-				##if len(res) == 0:
-					##non ho mai ricevuto questo pacchetto
 				self.app.db.insertPacchetto(packetID, ip, port)
 				self.app.db.insertPeer(ip, port)
 			self.socket.close()
 
+		# Ricevuto QUER: qualcuno sta cercando qualcosa
 		if self.type == "QUER":
 			print("QUER received")
 			self.app.log("QUER received")			
-			#abbiamo ricevuto un pacchetto di query
+
 			packetID = self.socket.recv(16)
-			ip =  self.socket.recv(39)
+			ip =  self.socket.recv(55)
 			port = self.socket.recv(5)
 			ttl = self.socket.recv(2)
 			ricerca = self.socket.recv(20)
-			#controllo se non ho ricevuto il pacchetto
+
 			res = self.app.db.getPacchetto(packetID)
-			if len(res) == 0:
+			if len(res) == 0: # Pacchetto nuovo
 				print("SEARCHING FOR " + ricerca + " - " + str(len(ricerca)))
 				self.app.log("SEARCHING FOR " + ricerca + " - " + str(len(ricerca)))
 				self.app.db.insertPacchetto(packetID, ip, port)
 				files = self.app.db.searchFile(ricerca.replace(" ", ""))
-				if len(files) != 0:
-					#abbiamo trovato i file
-					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-					s.connect((ip, int(port)))
-					for i in range(len(files)):
+
+				if len(files) != 0: # Ho dei files che corrispondono alla ricerca
+					if random.randint(0,1)==0:
+						print("ipv4")
+						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+						ip = ip.split("|")[0]
+						s.connect((ip, int(port)))
+					else:
+						print("ipv6")
+						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+						ip = ip.split("|")[1]
+						s.connect((ip, int(port)))
+
+					for i in range(len(files)): # Rispondo al peer interessato con i nomi dei files
 						filename, md5 = files[i]
 						temp = filename
 						if len(temp) < 100:
@@ -153,24 +180,33 @@ class PacketHandler(threading.Thread):
 						elif len(temp) > 100:
 							temp = temp[0:100]
 						port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
-						#"0" + str(self.port)
 						message = "AQUE" + packetID + self.address + port_message + md5 + temp
 						print("SENDING " + message)
 						self.app.log("SENDING " + message)
 						s.send(message)
 					s.close()
-					#non propaghiamo la ricerca
-				else:
+
+				else: # Non ho files che corrispondano alla ricerca, ripropago la query
 					if int(ttl) > 1:
 						ttl = str(int(ttl) - 1)
 						ttl = ("0" * (2-len(ttl))) + ttl
-						#propaghiamo la ricerca ai nostri vicini
+
 						peers = self.app.db.getAllPeers()
 						if len(peers) != 0:
 							for i in range(len(peers)):
 								p_ip, p_port = peers[i]
-								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-								s.connect((p_ip, int(p_port)))
+		
+								if random.randint(0,1)==0:
+									print("ipv4")
+									s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+									p_ip = p_ip.split("|")[0]
+									s.connect((p_ip, int(p_port)))
+								else:
+									print("ipv6")
+									s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+									p_ip = p_ip.split("|")[1]
+									s.connect((p_ip, int(p_port)))
+
 								port_message = ("0" * (5-len(str(port)))) + str(port)
 								message = "QUER" + packetID + ip + port_message + ttl + ricerca
 								print("SENDING " + message)
@@ -179,14 +215,14 @@ class PacketHandler(threading.Thread):
 								s.close()
 			self.socket.close()
 
-			
+		# Ricevuto AQUE: qualcuno ha dei files che corrispondono alla mia ricerca
 		if self.type == "AQUE":
 			print("AQUE received")
 			self.app.log("AQUE received")
 			packetID = self.socket.recv(16)
-			ip = self.socket.recv(39)
+			ip = self.socket.recv(55)
 			port = self.socket.recv(5)
-			md5 = self.socket.recv(16)
+			md5 = self.socket.recv(32)
 			filename = self.socket.recv(100)
 			s = str(filename)
 			print(str(md5) + " - " + str(filename))
@@ -237,24 +273,48 @@ class Receiver(threading.Thread):
 	
 	def run(self):
 		try:
-			self.socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-			self.server_address = ( self.address , int(self.port))
-			self.socket.bind(self.server_address)
-			self.socket.listen(1)
+			# Socket creation, binding and listening
+			info = socket.getaddrinfo(None, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+			info.sort(key=lambda x: x[0] == socket.AF_INET6, reverse=True)
+			for res in info:
+				af, socktype, proto, canonname, sa = res
+				self.socket = None
+				try:
+					self.socket = socket.socket(af, socktype, proto)
+					self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+					# If supported set IPV6_V6ONLY flag to FALSE
+					if af == socket.AF_INET6:
+						self.socket.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
+						print("Socket is listening. IPv6 and IPv4 BOTH supported")
+						print("IP: " + sa[0])
+						print("Port: " + str(sa[1]))
+					self.socket.bind(sa)
+					self.socket.listen(1)
+					break
+				except socket.error as msg:
+						continue
+			# Error check
+			if self.socket is None:
+				print ('Could not open socket')
+				sys.exit(2)
+			
+			# Service
 			while self.canRun:
 				try:
 					socketclient, address = self.socket.accept()
 					msg_type = socketclient.recv(4)
-					if msg_type == "RETR":
+					
+					if msg_type == "RETR": # RETR è gestito da PeerClient
 						print("RETR received")
 						self.app.log("RETR received")
-						md5 = socketclient.recv(16)
+						md5 = socketclient.recv(32)
 						filename = self.app.context["files_md5"][str(md5)]
 						PeerToPeer(filename, socketclient, self.app).start()
-					else:
+					else: # Tutti gli altri messaggi sono gestiti dal PacketHandler
 						PacketHandler(socketclient, msg_type, self.app, self.address, self.port).start()
+				
 					
-						
 				except:
 					print("error in receiver run")
 					self.app.log("error in receiver run")
