@@ -14,9 +14,11 @@ class PeerClient(object):
 		try:
 			self.app = app
 
-			if ip_p2p == None:
-
-				short_ip = socket.getaddrinfo(socket.gethostname(),None, socket.AF_INET6)[1][4][0]
+			# IP non presente nella chiamata, calcolalo
+			if ip_p2p == None or ip_p2p == '':
+				print("Calulating IP addresses...")
+				short_ip = socket.getaddrinfo(None,None, socket.AF_INET6, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)[1][4][0]
+				print("Short_ip: " + short_ip)
 				short_ip_a = short_ip.split(":")
 				last = short_ip_a[-1]
 				ip = ""
@@ -28,11 +30,15 @@ class PeerClient(object):
 							ip = ip + i
 						else:
 							ip = ip + i + ":"
-						
-				self.ip_p2p = ip
+				ip_v4 = socket.gethostbyname(socket.gethostname())
+				self.ip_p2p = ip + "|" + ip_v4
+				print("IP: " + self.ip_p2p)
+				#self.ip_p2p = ip
 
+			# IP passato nella chiamata
 			else:
 				self.ip_p2p = ip_p2p
+			print("Peer's IP (v4|v6): " + self.ip_p2p)
 			self.port = str(random.randint(8000,9000))
 			##we obtained a new port between 8000 and 9000
 			self.app.log(self.ip_p2p +":"+self.port)
@@ -53,7 +59,7 @@ class PeerClient(object):
 
 	def searchFile(self):
 		try:
-			searchString = self.app.searchBox.text ##.get("1.0", END)[0:-1]
+			searchString = self.app.searchBox.text
 			print("INSIDE SEARCH " + searchString)
 
 			chars = string.ascii_letters + string.digits
@@ -78,8 +84,17 @@ class PeerClient(object):
 					for i in range(len(peers)):
 						ip, port = peers[i]
 
-						self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-						self.connection_socket.connect((ip, int(port)))
+						# IPv4/v6 random connection
+						if random.randint(0,1)==0:
+							print("ipv4")
+							self.connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+							ip = ip.split("|")[0]
+							self.connection_socket.connect((ip, int(port)))
+						else:
+							print("ipv6")
+							self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+							ip = ip.split("|")[1]
+							self.connection_socket.connect((ip, int(port)))
 
 						ttl = "02"
 						port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
@@ -110,13 +125,27 @@ class PeerClient(object):
 			key = str(i)+"_"+str(s)
 			if(self.app.context["downloads_available"][str(key)]):
 				peer = self.app.context["downloads_available"][str(key)]
-				print(peer)
-				##possiamo far partire il download del file
-				destination = (s , int(peer["porta"]))
-				print(destination)
-				print(peer["md5"])
-				self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-				self.connection_socket.connect(destination)
+					
+				# IPv4/v6 random connection
+				if random.randint(0,1)==0:
+					print("ipv4")
+					print(peer)
+					self.connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					s = s.split("|")[0]
+					destination = (s, int(peer["porta"]))
+					print(destination)
+					print(peer["md5"])
+					self.connection_socket.connect(destination)
+				else:
+					print("ipv6")
+					print(peer)
+					self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+					s = s.split("|")[1]
+					destination = (s, int(peer["porta"]))
+					print(destination)
+					print(peer["md5"])
+					self.connection_socket.connect(destination)
+
 				message = "RETR"+str(peer["md5"])
 				self.connection_socket.send(message)
 				message_type = self.connection_socket.recv(4)
@@ -129,11 +158,8 @@ class PeerClient(object):
 						if (int(len_chunk) > 0):
 							self.app.progress.value = self.app.progress.value + 1
 							chunk = self.connection_socket.recv(int(len_chunk))
-							#f.write(chunk)
-							#print("downloading chunk " + str(len_chunk))
 							while len(chunk) < int(len_chunk):
 								new_data = self.connection_socket.recv(int(len_chunk)-len(chunk))
-								#f.write(new_data)
 								chunk = chunk + new_data
 							f.write(chunk)
 					f.close()
