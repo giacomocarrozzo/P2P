@@ -29,8 +29,17 @@ class CercaVicini (threading.Thread):
 					packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 					for i in range(len(peers)):
 						ip , port = peers[i]
-						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-						s.connect((ip, int(port)))
+						#Random ipv6 ipv4
+						if random.randint(0.1)==0:
+							print ("ipv4")
+							s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+							s.connect((ip, int(port)))
+						else:
+							print ("ipv6")
+							s = socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+							s.connect((ip, int(port)))
+						#s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+						#s.connect((ip, int(port)))
 						self.app.log("sending near to " + str((ip, int(port))))
 						print("sending near to " + str((ip, int(port))))
 						ttl = "02"

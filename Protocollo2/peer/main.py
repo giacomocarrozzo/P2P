@@ -105,7 +105,7 @@ class Controller(FloatLayout):
 			text = readFile.readline()
 
 		digest = m.hexdigest()
-		digest = digest[:16]
+		#digest = digest[:16]
 		return digest
 
 	def receivedLogin( self, sessionId ):
