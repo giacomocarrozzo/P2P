@@ -22,6 +22,7 @@ import threading
 import hashlib
 import glob
 import time
+import os
 
 ## fd00:0000:0000:0000:c864:f17c:bb5e:e4d1 giulio
 ## fd00:0000:0000:0000:7481:4a85:5d87:9a52 altri
@@ -38,6 +39,9 @@ import time
 ## marco fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e
 ## mahdi fd00:0000:0000:0000:ddb9:fc81:21d4:62c0
 
+#ubuntu4 192.168.043.100
+#ubuntu6 fe80:0000:0000:0000:0a00:27ff:fea0:f155
+# 192.168.043.100|fe80:0000:0000:0000:0a00:27ff:fea0:f155
 
 class Controller(FloatLayout):
 
@@ -55,7 +59,10 @@ class Controller(FloatLayout):
 		##creiamo il database
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, 'fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e')#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")  
+		self.context['my_ip_v4'] = "192.168.043.179";
+		self.context['my_ip_v6'] = "fe80:0000:0000:0000:0000:8046:4bbd:91ca";
+
+		self.peer = PeerClient(self,  self.context['my_ip_v4']+"|"+self.context['my_ip_v6'])#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")
 		self.peer.iamsuper = False
 
 		self.receiver = Receiver(self)
@@ -70,7 +77,7 @@ class Controller(FloatLayout):
 
 		self.background.start()
 		self.receiver.start()
-		self.cercaVicini.start()
+		#self.cercaVicini.start()
 
 	def stop(self):
 		print("chiudo1")
@@ -78,7 +85,7 @@ class Controller(FloatLayout):
 		print("chiudo2")
 		self.receiver.stop()
 		print("chiudo3")
-		self.cercaVicini.stop()
+		#self.cercaVicini.stop()
 		print("chiudo4")
 		self.db.stop()
 		print("chiudo5")
@@ -98,7 +105,7 @@ class Controller(FloatLayout):
 
 	def calcMD5(self, filename):
 		m = hashlib.md5()
-		readFile = open(str("shared/"+filename) , "r")
+		readFile = open(os.path.normcase(str("shared/"+filename)) , "r")
 		text = readFile.readline()
 		while text:
 			m.update(text)

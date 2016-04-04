@@ -3,8 +3,8 @@ import socket
 import time
 import sys
 import random
+import os
 from ipv6utils import *
-##import os
 
 class PeerToPeer(threading.Thread):
 
@@ -20,7 +20,7 @@ class PeerToPeer(threading.Thread):
 			##filename = self.app.context["files_md5"][str(self.md5)]
 			self.filename = self.filename.strip(" ")
 			print("about to open file " + self.filename)
-			readFile = open(str("shared/"+self.filename) , "rb")
+			readFile = open(os.path.normcase(str("shared/"+self.filename)) , "rb")
 			##size = os.path.getsize("shared/"+filename)
 			index = 0
 			data = readFile.read(1024)
@@ -38,7 +38,7 @@ class PeerToPeer(threading.Thread):
 			print("about to send message " + message)
 			self.socket.send(message)
 			l = len(str(int(len(bytes))))
-			
+
 			l_string = ("0" * (6 - l)) + str(int(len(bytes)))
 			print("about to send message " + str(l_string))
 			self.socket.send(str(l_string))
@@ -69,7 +69,7 @@ class PacketHandler(threading.Thread):
 		self.port = port
 
 	def run(self):
-
+		print("MI HANNO CONTATTATO")
 		# Ricevuto NEAR: richiesta vicini
 		if self.type == "NEAR":
 			print()
@@ -106,7 +106,7 @@ class PacketHandler(threading.Thread):
 						for i in range(len(peers)): # rimando la near ai miei vicini
 							p_ip , p_port = peers[i]
 
-							# Random IPv4/v6 connection 
+							# Random IPv4/v6 connection
 							if random.randint(0,1)==0:
 								print("ipv4")
 								s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -144,7 +144,7 @@ class PacketHandler(threading.Thread):
 		# Ricevuto QUER: qualcuno sta cercando qualcosa
 		if self.type == "QUER":
 			print("QUER received")
-			self.app.log("QUER received")			
+			self.app.log("QUER received")
 
 			packetID = self.socket.recv(16)
 			ip =  self.socket.recv(55)
@@ -195,7 +195,7 @@ class PacketHandler(threading.Thread):
 						if len(peers) != 0:
 							for i in range(len(peers)):
 								p_ip, p_port = peers[i]
-		
+
 								if random.randint(0,1)==0:
 									print("ipv4")
 									s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
@@ -233,7 +233,7 @@ class PacketHandler(threading.Thread):
 			print("\t" + str(ip) + " " + str(port))
 			self.app.log("\t" + str(ip) + " " + str(port))
 			self.app.context["peers_addr"].append(str(ip))
-			key = str(self.app.context["peers_index"])+"_"+str(ip) 
+			key = str(self.app.context["peers_index"])+"_"+str(ip)
 			self.app.context["downloads_available"][str(key)] = dict()
 			self.app.context["downloads_available"][str(key)]["porta"] = port
 			self.app.context["downloads_available"][str(key)]["nome"] = filename.replace(" ","")
@@ -250,7 +250,7 @@ class Receiver(threading.Thread):
 		self.canRun = True
 		threading.Thread.__init__(self)
 		self.app = app
-		self.peer = app.peer 
+		self.peer = app.peer
 		self.address = app.peer.ip_p2p
 		self.port = int(app.peer.port)
 
@@ -270,7 +270,7 @@ class Receiver(threading.Thread):
 		self.app.log((self.address, self.port))
 		socket.socket(socket.AF_INET6, socket.SOCK_STREAM).connect((self.address, self.port))
 		self.socket.close()
-	
+
 	def run(self):
 		try:
 			# Socket creation, binding and listening
@@ -298,13 +298,13 @@ class Receiver(threading.Thread):
 			if self.socket is None:
 				print ('Could not open socket')
 				sys.exit(2)
-			
+
 			# Service
 			while self.canRun:
 				try:
 					socketclient, address = self.socket.accept()
 					msg_type = socketclient.recv(4)
-					
+
 					if msg_type == "RETR": # RETR viene gestito da PeerClient
 						print("RETR received")
 						self.app.log("RETR received")
@@ -313,8 +313,8 @@ class Receiver(threading.Thread):
 						PeerToPeer(filename, socketclient, self.app).start()
 					else: # Tutti gli altri messaggi sono gestiti dal PacketHandler
 						PacketHandler(socketclient, msg_type, self.app, self.address, self.port).start()
-				
-					
+
+
 				except:
 					print("error in receiver run")
 					self.app.log("error in receiver run")

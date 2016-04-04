@@ -31,7 +31,7 @@ class DBControl(threading.Thread):
 						for  i in range(len(results)):
 							p_id, t , ip , port = results[i]
 							if (time.time() - t) > 300:
-								
+
 								remove = "DELETE FROM pacchetti WHERE packetID='"+p_id+"'"
 								cursor.execute(remove)
 
@@ -77,7 +77,7 @@ class Database(object):
 		self.dbControl.start()
 		if not os.path.isfile('database'):
 			self.initializeDatabase()
-    	
+
 	def stop(self):
 		self.dbControl.stop()
 
@@ -165,7 +165,7 @@ class Database(object):
 			conn.commit()
 			cursor.close()
 			return None
-			
+
 
 	def getFileMd5(self, filename):
 		conn = sqlite3.connect('database')
@@ -235,10 +235,3 @@ class Database(object):
 		conn.commit()
 		cursor.close()
 		return results
-
-
-
-
-
-
-

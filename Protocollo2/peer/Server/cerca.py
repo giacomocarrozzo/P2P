@@ -4,6 +4,7 @@ import string
 import random
 import sys
 import time
+import os
 
 class CercaVicini (threading.Thread):
 
@@ -29,6 +30,7 @@ class CercaVicini (threading.Thread):
 					packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 					for i in range(len(peers)):
 						ip , port = peers[i]
+						print(peers[i])
 						#Random ipv6 ipv4
 						if random.randint(0.1)==0:
 							print ("ipv4")
@@ -55,5 +57,5 @@ class CercaVicini (threading.Thread):
 				self.app.log("CERCAVICINI ERRORE", "ERR")
 				print(sys.exc_info()[0], "ERR")
 				print(sys.exc_info()[1], "ERR")
-				print(sys.exc_info()[2], "ERR")			
+				print(sys.exc_info()[2], "ERR")
 		return
