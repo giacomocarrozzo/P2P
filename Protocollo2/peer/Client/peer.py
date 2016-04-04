@@ -17,7 +17,8 @@ class PeerClient(object):
 
 			self.ip_p2p = ip_p2p
 			print("Peer's IP (v4|v6): " + self.ip_p2p)
-			self.port = str(random.randint(8000,9000))
+			#self.port = str(random.randint(8000,9000))
+			self.port="8000"
 			##we obtained a new port between 8000 and 9000
 			self.app.log(self.ip_p2p +":"+self.port)
 			print(self.ip_p2p +":"+self.port)
@@ -57,7 +58,7 @@ class PeerClient(object):
 					for i in range(len(peers)):
 						ip, port = peers[i]
 						# IPv4/v6 random connection
-						if random.randint(0,1)==0:
+						if 1:
 							print("ipv4")
 							self.search_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							ip = ip.split("|")[0]
@@ -106,7 +107,7 @@ class PeerClient(object):
 				peer = self.app.context["downloads_available"][str(key)]
 
 				# IPv4/v6 random connection
-				if random.randint(0,1)==0:
+				if 1:
 					print("ipv4")
 					print(peer)
 					self.connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

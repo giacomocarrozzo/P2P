@@ -24,24 +24,9 @@ import glob
 import time
 import os
 
-## fd00:0000:0000:0000:c864:f17c:bb5e:e4d1 giulio
-## fd00:0000:0000:0000:7481:4a85:5d87:9a52 altri
-## fd00:0000:0000:0000:22c9:d0ff:fe47:70a3
-## fd00:0000:0000:0000:c646:19ff:fe69:b7a5
-## fd00:0000:0000:0000:acdf:bd40:555a:59e4
-## fd00:0000:0000:0000:9afe:94ff:fe3f:b0f2
-## fd00:0000:0000:0000:b89a:58cf:3c32:10a6
-
-## fd00:0000:0000:0000:1e4b:d6ff:fecd:ba68
-## fd00:0000:0000:0000:021a:73ff:fed2:dbf5
-
-## michael fd00:0000:0000:0000:5626:96ff:fedb:a4ad
-## marco fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e
-## mahdi fd00:0000:0000:0000:ddb9:fc81:21d4:62c0
-
-#ubuntu4 192.168.043.100
-#ubuntu6 fe80:0000:0000:0000:0a00:27ff:fea0:f155
-# 192.168.043.100|fe80:0000:0000:0000:0a00:27ff:fea0:f155
+#marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae
+#enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef
+#giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca
 
 class Controller(FloatLayout):
 
@@ -49,15 +34,17 @@ class Controller(FloatLayout):
 
 	def __init__ (self, **kwargs):
 		super(Controller, self).__init__(**kwargs)
-
+		##creiamo il database
+		self.db = Database(self)
+		
 		self.context = dict()
 		self.context['peers_index'] = 0
 		self.context['file_names'] = list()
 		self.context["peers_addr"] = list()
 		self.adapter = la.ListAdapter(data=self.context['file_names'],selection_mode='single',allow_empty_selection=True,cls=lv.ListItemButton)
 		self.peerAdapter = la.ListAdapter(data=self.context['peers_addr'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
-		##creiamo il database
-		self.db = Database(self)
+
+
 
 		self.context['my_ip_v4'] = "192.168.043.179";
 		self.context['my_ip_v6'] = "fe80:0000:0000:0000:0000:8046:4bbd:91ca";
@@ -67,7 +54,7 @@ class Controller(FloatLayout):
 
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
-		self.cercaVicini = CercaVicini(self)
+		#self.cercaVicini = CercaVicini(self)
 
 		self.adapter.bind(on_selection_change=self.selectedItem)
 		self.fileList.adapter = self.adapter
@@ -80,6 +67,7 @@ class Controller(FloatLayout):
 		#self.cercaVicini.start()
 
 	def stop(self):
+
 		print("chiudo1")
 		self.background.stop()
 		print("chiudo2")
@@ -88,6 +76,7 @@ class Controller(FloatLayout):
 		#self.cercaVicini.stop()
 		print("chiudo4")
 		self.db.stop()
+		#os.remove('database')
 		print("chiudo5")
 
 	def log(self, message, messagetype="LOG"):

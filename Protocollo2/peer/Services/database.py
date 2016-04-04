@@ -115,11 +115,12 @@ class Database(object):
 	def insertFile(self, filename, md5):
 		conn = sqlite3.connect('database')
 		cursor = conn.cursor()
-
+		print(filename)
 		select = "SELECT * FROM files WHERE md5='"+md5+"'"
 		cursor.execute(select)
 		results =  cursor.fetchall()
 		if len(results) == 0:
+			print("salvo")
 			#non abbiamo mai inserito questo pacchetto
 			f = (filename, md5)
 			query = "INSERT INTO files VALUES(?, ?)"

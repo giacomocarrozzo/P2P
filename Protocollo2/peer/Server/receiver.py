@@ -82,7 +82,7 @@ class PacketHandler(threading.Thread):
 			res = self.app.db.getPacchetto(packetID)
 
 			# Random IPv4/v6 connection
-			if random.randint(0,1)==0:
+			if 1:
 				print("ipv4")
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				ip_v4 = ip.split("|")[0]
@@ -107,7 +107,7 @@ class PacketHandler(threading.Thread):
 							p_ip , p_port = peers[i]
 
 							# Random IPv4/v6 connection
-							if random.randint(0,1)==0:
+							if 1:
 								print("ipv4")
 								s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 								p_ip = p_ip.split("|")[0]
@@ -160,7 +160,7 @@ class PacketHandler(threading.Thread):
 				files = self.app.db.searchFile(ricerca.replace(" ", ""))
 
 				if len(files) != 0: # Ho dei files che corrispondono alla ricerca
-					if random.randint(0,1)==0:
+					if 1:
 						print("ipv4")
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 						ip = ip.split("|")[0]
@@ -196,7 +196,7 @@ class PacketHandler(threading.Thread):
 							for i in range(len(peers)):
 								p_ip, p_port = peers[i]
 
-								if random.randint(0,1)==0:
+								if 1:
 									print("ipv4")
 									s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 									p_ip = p_ip.split("|")[0]
@@ -268,8 +268,8 @@ class Receiver(threading.Thread):
 		##trying to connect to my own port
 		print((self.address, self.port))
 		self.app.log((self.address, self.port))
-		socket.socket(socket.AF_INET6, socket.SOCK_STREAM).connect((self.address, self.port))
-		self.socket.close()
+		#socket.socket(socket.AF_INET6, socket.SOCK_STREAM).connect((self.address, self.port))
+		#self.socket.close()
 
 	def run(self):
 		try:

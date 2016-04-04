@@ -33,9 +33,12 @@ class BackgroundService(threading.Thread):
 
 		if self.app.context['files']:
 			temp = glob.glob(os.path.normcase("shared/*.*"))
+			#print(temp)
 			to_remove = list(set(self.app.context['files']) - set(temp))
 			to_add = list(set(temp) - set(self.app.context['files']))
+			#print(to_add)
 			if len(to_remove) > 0 :
+				print("rimuovo")
 				for f in to_remove:
 					filename_rem = f.split(os.path.normcase("shared/"))[1]
 					md5_rem = self.app.context["md5_files"][filename_rem]
@@ -44,6 +47,7 @@ class BackgroundService(threading.Thread):
 					self.app.db.removeFile(md5_rem)
 
 			if len(to_add) > 0  :
+				print("inserisco")
 				for f in to_add:
 					filename_add = f.split(os.path.normcase("shared/"))[1]
 					md5_add = self.app.calcMD5(filename_add)
