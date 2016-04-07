@@ -32,13 +32,15 @@ class CercaVicini (threading.Thread):
 						ip , port = peers[i]
 						print(peers[i])
 						#Random ipv6 ipv4
-						if random.randint(0.1)==0:
+						if 1:#random.randint(0,1)==0:
 							print ("ipv4")
 							s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+							ip = ip.split("|")[0]
 							s.connect((ip, int(port)))
 						else:
 							print ("ipv6")
 							s = socket.socket(socket.AF_INET6,socket.SOCK_STREAM)
+							ip = ip.split("|")[1]
 							s.connect((ip, int(port)))
 						#s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 						#s.connect((ip, int(port)))
