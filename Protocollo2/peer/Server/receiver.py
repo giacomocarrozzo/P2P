@@ -153,27 +153,29 @@ class PacketHandler(threading.Thread):
 			ricerca = self.socket.recv(20)
 
 			res = self.app.db.getPacchetto(packetID)
-			if len(res) == 0: # Pacchetto nuovo
+			if len(res) == 0: # Pacchetto nuovo, devo gestirlo
 				print("SEARCHING FOR " + ricerca + " - " + str(len(ricerca)))
 				self.app.log("SEARCHING FOR " + ricerca + " - " + str(len(ricerca)))
 				self.app.db.insertPacchetto(packetID, ip, port)
 				files = self.app.db.searchFile(ricerca.replace(" ", ""))
 
 				if len(files) != 0: # Ho dei files che corrispondono alla ricerca
-					if 1:
-						print("ipv4")
-						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-						ip = ip.split("|")[0]
-						s.connect((ip, int(port)))
-					else:
-						print("ipv6")
-						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-						ip = ip.split("|")[1]
-						s.connect((ip, int(port)))
-
+					
 					for i in range(len(files)): # Rispondo al peer interessato con i nomi dei files
+						if 1:
+							print("ipv4")
+							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+							ip = ip.split("|")[0]
+							s.connect((ip, int(port)))
+						else:
+							print("ipv6")
+							s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+							ip = ip.split("|")[1]
+							s.connect((ip, int(port)))
 						filename, md5 = files[i]
 						temp = filename
+						print("Passo " + str(i))
+						print("File: "+ temp)
 						if len(temp) < 100:
 							while len(temp) < 100:
 								temp = temp + " "
@@ -184,35 +186,36 @@ class PacketHandler(threading.Thread):
 						print("SENDING " + message)
 						self.app.log("SENDING " + message)
 						s.send(message)
-					s.close()
+						s.close()
 
-				else: # Non ho files che corrispondano alla ricerca, ripropago la query
-					if int(ttl) > 1:
-						ttl = str(int(ttl) - 1)
-						ttl = ("0" * (2-len(ttl))) + ttl
+				# Ripropago la query se il ttl del pacchetto è >1
+				if int(ttl) > 1:
+					ttl = str(int(ttl) - 1)
+					ttl = ("0" * (2-len(ttl))) + ttl
+					peers = self.app.db.getAllPeers()
 
-						peers = self.app.db.getAllPeers()
-						if len(peers) != 0:
-							for i in range(len(peers)):
-								p_ip, p_port = peers[i]
+					if len(peers) != 0:
+						for i in range(len(peers)):
+							p_ip, p_port = peers[i]
 
-								if 1:
-									print("ipv4")
-									s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-									p_ip = p_ip.split("|")[0]
-									s.connect((p_ip, int(p_port)))
-								else:
-									print("ipv6")
-									s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-									p_ip = p_ip.split("|")[1]
-									s.connect((p_ip, int(p_port)))
+							if 1:
+								print("ipv4")
+								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+								p_ip = p_ip.split("|")[0]
+								s.connect((p_ip, int(p_port)))
+							else:
+								print("ipv6")
+								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+								p_ip = p_ip.split("|")[1]
+								s.connect((p_ip, int(p_port)))
 
-								port_message = ("0" * (5-len(str(port)))) + str(port)
-								message = "QUER" + packetID + ip + port_message + ttl + ricerca
-								print("SENDING " + message)
-								self.app.log("SENDING " + message)
-								s.send(message)
-								s.close()
+							port_message = ("0" * (5-len(str(port)))) + str(port)
+							message = "QUER" + packetID + ip + port_message + ttl + ricerca
+							print("SENDING " + message)
+							self.app.log("SENDING " + message)
+							s.send(message)
+							s.close()
+			# Chiudo la socket su cui ho ricevuto il messaggio
 			self.socket.close()
 
 		# Ricevuto AQUE: qualcuno ha dei files che corrispondono alla mia ricerca
