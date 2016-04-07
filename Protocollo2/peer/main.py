@@ -28,6 +28,7 @@ import os
 #enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef
 #giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca
 #valerio 192.168.043.200|fe80:0000:0000:0000:d2a3:6f30:86d6:b093
+#andrea 192.168.43.113|fe80:0000:0000:0000:d253:49ff:fece:9247
 
 class Controller(FloatLayout):
 
@@ -37,7 +38,7 @@ class Controller(FloatLayout):
 		super(Controller, self).__init__(**kwargs)
 		##creiamo il database
 		self.db = Database(self)
-		
+
 		self.context = dict()
 		self.context['peers_index'] = 0
 		self.context['file_names'] = list()
@@ -47,15 +48,15 @@ class Controller(FloatLayout):
 
 
 
-		self.context['my_ip_v4'] = "192.168.043.179";
-		self.context['my_ip_v6'] = "fe80:0000:0000:0000:0000:8046:4bbd:91ca";
+		self.context['my_ip_v4'] = "192.168.043.113";
+		self.context['my_ip_v6'] = "fe80:0000:0000:0000:d253:49ff:fece:9247";
 
 		self.peer = PeerClient(self,  self.context['my_ip_v4']+"|"+self.context['my_ip_v6'])#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")
 		self.peer.iamsuper = False
 
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
-		#self.cercaVicini = CercaVicini(self)
+		self.cercaVicini = CercaVicini(self)
 
 		self.adapter.bind(on_selection_change=self.selectedItem)
 		self.fileList.adapter = self.adapter
@@ -65,7 +66,7 @@ class Controller(FloatLayout):
 
 		self.background.start()
 		self.receiver.start()
-		#self.cercaVicini.start()
+		self.cercaVicini.start()
 
 	def stop(self):
 
