@@ -27,6 +27,7 @@ import os
 #marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae
 #enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef
 #giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca
+#andrea 192.168.43.113|fe80:0000:0000:0000:d253:49ff:fece:9247
 
 class Controller(FloatLayout):
 
@@ -46,15 +47,15 @@ class Controller(FloatLayout):
 
 
 
-		self.context['my_ip_v4'] = "192.168.043.179";
-		self.context['my_ip_v6'] = "fe80:0000:0000:0000:0000:8046:4bbd:91ca";
+		self.context['my_ip_v4'] = "192.168.043.113";
+		self.context['my_ip_v6'] = "fe80:0000:0000:0000:d253:49ff:fece:9247";
 
 		self.peer = PeerClient(self,  self.context['my_ip_v4']+"|"+self.context['my_ip_v6'])#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")
 		self.peer.iamsuper = False
 
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
-		#self.cercaVicini = CercaVicini(self)
+		self.cercaVicini = CercaVicini(self)
 
 		self.adapter.bind(on_selection_change=self.selectedItem)
 		self.fileList.adapter = self.adapter
@@ -64,7 +65,7 @@ class Controller(FloatLayout):
 
 		self.background.start()
 		self.receiver.start()
-		#self.cercaVicini.start()
+		self.cercaVicini.start()
 
 	def stop(self):
 
