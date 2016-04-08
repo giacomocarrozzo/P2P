@@ -58,7 +58,7 @@ class PeerClient(object):
 					for i in range(len(peers)):
 						ip, port = peers[i]
 						# IPv4/v6 random connection
-						if 1:
+						if random.randint(0,1)==0:
 							print("ipv4")
 							self.search_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							ip = ip.split("|")[0]
@@ -107,7 +107,7 @@ class PeerClient(object):
 				peer = self.app.context["downloads_available"][str(key)]
 
 				# IPv4/v6 random connection
-				if 1:
+				if random.randint(0,1)==0:
 					print("ipv4")
 					print(peer)
 					self.connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
