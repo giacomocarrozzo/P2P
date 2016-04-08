@@ -82,7 +82,7 @@ class PacketHandler(threading.Thread):
 			res = self.app.db.getPacchetto(packetID)
 
 			# Random IPv4/v6 connection
-			if 1:
+			if random.randint(0,1)==0:
 				print("ipv4")
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				ip_v4 = ip.split("|")[0]
@@ -107,7 +107,7 @@ class PacketHandler(threading.Thread):
 							p_ip , p_port = peers[i]
 
 							# Random IPv4/v6 connection
-							if 1:
+							if random.randint(0,1)==0:
 								print("ipv4")
 								s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 								p_ip = p_ip.split("|")[0]
@@ -132,11 +132,10 @@ class PacketHandler(threading.Thread):
 			self.app.log("ANEA received")
 			# Recupero i miei vicini e controllo di averne al max tre
 			peers = self.app.db.getAllPeers()
-			if len(peers) < 4:
-				packetID = self.socket.recv(16)
-				ip = self.socket.recv(55)
-				port = self.socket.recv(5)
-				res = self.app.db.getPacchetto(packetID)
+			packetID = self.socket.recv(16)
+			ip = self.socket.recv(55)
+			port = self.socket.recv(5)
+			if len(peers) < 4 and ip!=self.address:
 				self.app.db.insertPacchetto(packetID, ip, port)
 				self.app.db.insertPeer(ip, port)
 			self.socket.close()
@@ -162,7 +161,7 @@ class PacketHandler(threading.Thread):
 				if len(files) != 0: # Ho dei files che corrispondono alla ricerca
 					
 					for i in range(len(files)): # Rispondo al peer interessato con i nomi dei files
-						if 1:
+						if random.randint(0,1)==0:
 							print("ipv4")
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							ip = ip.split("|")[0]
@@ -188,7 +187,7 @@ class PacketHandler(threading.Thread):
 						s.send(message)
 						s.close()
 
-				# Ripropago la query se il ttl del pacchetto è >1
+				# Ripropago la query se il ttl del pacchetto e' >1
 				if int(ttl) > 1:
 					ttl = str(int(ttl) - 1)
 					ttl = ("0" * (2-len(ttl))) + ttl
@@ -198,7 +197,7 @@ class PacketHandler(threading.Thread):
 						for i in range(len(peers)):
 							p_ip, p_port = peers[i]
 
-							if 1:
+							if random.randint(0,1)==0:
 								print("ipv4")
 								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 								p_ip = p_ip.split("|")[0]

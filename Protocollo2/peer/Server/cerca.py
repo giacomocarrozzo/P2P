@@ -32,7 +32,7 @@ class CercaVicini (threading.Thread):
 						ip , port = peers[i]
 						print(peers[i])
 						#Random ipv6 ipv4
-						if 1:#random.randint(0,1)==0:
+						if random.randint(0,1)==0:
 							print ("ipv4")
 							s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 							ip = ip.split("|")[0]
@@ -53,7 +53,7 @@ class CercaVicini (threading.Thread):
 						print("SENDING " + message)
 						s.send(message)
 						s.close()
-				time.sleep(10)
+				time.sleep(50)
 			except:
 				self.numErr += 1
 				self.app.log("CERCAVICINI ERRORE", "ERR")
