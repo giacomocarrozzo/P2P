@@ -27,8 +27,8 @@ import os
 #marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae
 #enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef
 #giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca
-#valerio 192.168.043.200|fe80:0000:0000:0000:d2a3:6f30:86d6:b093
-#andrea 192.168.43.113|fe80:0000:0000:0000:d253:49ff:fece:9247
+#andrea 192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247
+#valerio 192.168.043.200|fe80:0000:0000:0000:d2a3:
 
 class Controller(FloatLayout):
 
@@ -38,7 +38,7 @@ class Controller(FloatLayout):
 		super(Controller, self).__init__(**kwargs)
 		##creiamo il database
 		self.db = Database(self)
-
+		
 		self.context = dict()
 		self.context['peers_index'] = 0
 		self.context['file_names'] = list()
