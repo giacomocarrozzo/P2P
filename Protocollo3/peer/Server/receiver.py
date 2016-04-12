@@ -6,6 +6,7 @@ import sys
 import string
 import random
 import os
+from ipv6utils import *
 
 class PeerToPeer(threading.Thread):
 
@@ -22,7 +23,7 @@ class PeerToPeer(threading.Thread):
 			##filename = self.app.context["files_md5"][str(self.md5)]
 			self.filename = self.filename.strip(" ")
 			print("about to open file " + self.filename)
-			readFile = open(str(os.path.normcase("shared/"+self.filename)) , "rb")
+			readFile = open(os.path.normcase(str("shared/"+self.filename)) , "rb")
 			##size = os.path.getsize("shared/"+filename)
 			index = 0
 			data = readFile.read(1024)
@@ -61,7 +62,7 @@ class PeerToPeer(threading.Thread):
 			self.socket.close()
 			return
 		except:
-			print("SONO ANDATO IN ECCEZZIONE ZIO CAN inside peer to peer object")
+			print("SONO ANDATO IN ECCEZIONE: inside peer to peer object")
 			print(sys.exc_info()[0])
 			print(sys.exc_info()[1])
 			print(sys.exc_info()[2])
@@ -116,7 +117,7 @@ class QueryHandler(threading.Thread):
 			s.send(message)
 			s.close()
 		except:
-			print("eccezzione in queryhandler run")
+			print("eccezione in queryhandler run")
 			traceback.print_exc()
 
 
@@ -140,7 +141,7 @@ class PacketHandler(threading.Thread):
 				print("SUPE received")
 				##abbiamo ricevuto richiesta di vicini
 				packetID = self.socket.recv(16)
-				ip = self.socket.recv(39)
+				ip = self.socket.recv(55)
 				port = self.socket.recv(5)
 				ttl = self.socket.recv(2)
 				res = self.app.db.getPacchetto(packetID)
@@ -155,8 +156,18 @@ class PacketHandler(threading.Thread):
 								ttl = ("0" * (2-len(ttl))) + ttl
 								for i in range(len(peers)):
 									p_ip , p_port = peers[i]
-									s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-									s.connect((p_ip, int(p_port)))
+
+									if random.randint(0,1)==0:
+										print("ipv4")
+										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+										p_ip = p_ip.split("|")[0]
+										s.connect((p_ip, int(p_port)))
+									else:
+										print("ipv6")
+										s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+										p_ip = p_ip.split("|")[1]
+										s.connect((p_ip, int(p_port)))
+
 									message = "SUPE" + packetID + ip + str(port) + ttl
 									print("SENDING " + message)
 									s.send(message)
@@ -180,7 +191,7 @@ class PacketHandler(threading.Thread):
 			print("ASUP received")
 			##ci stanno rispondendo i super nodi
 			packetID = self.socket.recv(16)
-			ip = self.socket.recv(39)
+			ip = self.socket.recv(55)
 			port = self.socket.recv(5)
 			if self.peer.iamsuper:
 				res = self.app.db.getPacchetto(packetID)
@@ -202,7 +213,7 @@ class PacketHandler(threading.Thread):
 				print("RECEIVED LOGI")
 				if self.peer.iamsuper:
 					print("i'm super peer, i can handle this.")
-					ip = self.socket.recv(39)
+					ip = self.socket.recv(55)
 					port = self.socket.recv(5)
 					msg = self.app.db.insertClient(ip, port)
 					#il db mi restituisce il messaggio di errore per il client se ha cagato fuori
@@ -248,7 +259,7 @@ class PacketHandler(threading.Thread):
 					print("received addfile")
 					print("RECEIVED add file")
 					sessionId = self.socket.recv(16)
-					md5 = self.socket.recv(16)
+					md5 = self.socket.recv(32)
 					filename = self.socket.recv(100)
 					self.app.db.insertDirFile(sessionId, md5, filename)
 				else:
@@ -264,7 +275,7 @@ class PacketHandler(threading.Thread):
 					print("received remove file")
 					print("RECEIVED remove file")
 					sessionId = self.socket.recv(16)
-					md5 = self.socket.recv(16)
+					md5 = self.socket.recv(32)
 					self.app.db.removeDirFile(sessionId, md5)
 				else:
 					print("ignoring remove file")
@@ -332,9 +343,19 @@ class PacketHandler(threading.Thread):
 					peers = self.app.db.getAllPeers()
 					if len(peers) != 0:
 						for i in range(len(peers)):
-							p_ip, p_port = peers[i]
-							s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-							s.connect((p_ip, int(p_port)))
+							p_ip , p_port = peers[i]
+
+							if random.randint(0,1)==0:
+								print("ipv4")
+								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+								p_ip = p_ip.split("|")[0]
+								s.connect((p_ip, int(p_port)))
+							else:
+								print("ipv6")
+								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+								p_ip = p_ip.split("|")[1]
+								s.connect((p_ip, int(p_port)))
+
 							port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
 							message = "QUER" + packetID + self.address + port_message + ttl + ricerca
 							print("SENDING " + message)
@@ -353,7 +374,7 @@ class PacketHandler(threading.Thread):
 					print("QUER received")
 					#abbiamo ricevuto un pacchetto di query
 					packetID = self.socket.recv(16)
-					ip =  self.socket.recv(39)
+					ip =  self.socket.recv(55)
 					port = self.socket.recv(5)
 					ttl = self.socket.recv(2)
 					ricerca = self.socket.recv(20)
@@ -389,9 +410,19 @@ class PacketHandler(threading.Thread):
 							peers = self.app.db.getAllPeers()
 							if len(peers) != 0:
 								for i in range(len(peers)):
-									p_ip, p_port, p_session = peers[i]
-									s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-									s.connect((p_ip, int(p_port)))
+									p_ip , p_port = peers[i]
+
+									if random.randint(0,1)==0:
+										print("ipv4")
+										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+										p_ip = p_ip.split("|")[0]
+										s.connect((p_ip, int(p_port)))
+									else:
+										print("ipv6")
+										s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+										p_ip = p_ip.split("|")[1]
+										s.connect((p_ip, int(p_port)))
+
 									port_message = ("0" * (5-len(str(port)))) + str(port)
 									message = "QUER" + packetID + ip + port_message + ttl + ricerca
 									print("SENDING " + message)
@@ -415,9 +446,9 @@ class PacketHandler(threading.Thread):
 					print("AQUE received")
 					print("AQUE received")
 					packetID = self.socket.recv(16)
-					ip = self.socket.recv(39)
+					ip = self.socket.recv(55)
 					port = self.socket.recv(5)
-					md5 = self.socket.recv(16)
+					md5 = self.socket.recv(32)
 					filename = self.socket.recv(100)
 					##devo mandare questa roba al query handler con il packetID
 					self.queryPool[packetID].saveAque(ip, port, md5, filename)
@@ -436,7 +467,7 @@ class PacketHandler(threading.Thread):
 				print "num_md5 ", num_md5
 				if not int(num_md5) == 0:
 					for i in range(0, int(num_md5)):
-						md5 = self.socket.recv(16)
+						md5 = self.socket.recv(32)
 						filename = self.socket.recv(100)
 						s = str(filename)
 						print(str(md5) + " - " + str(filename))
@@ -445,7 +476,7 @@ class PacketHandler(threading.Thread):
 						self.app.context["peers_index"] += 1
 						num_copy = int(self.socket.recv(3))
 						if not num_copy == 0:
-							p_ip = self.socket.recv(39)
+							p_ip = self.socket.recv(55)
 							p_port = self.socket.recv(5)
 							print("\t" + str(ip) + " " + str(port))
 							self.app.context["peers_addr"].append(str(ip))
@@ -489,17 +520,40 @@ class Receiver(threading.Thread):
 
 	def run(self):
 		try:
-			self.socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-			self.server_address = ( self.address , int(self.port))
-			self.socket.bind(self.server_address)
-			self.socket.listen(1)
+			info = socket.getaddrinfo(None, self.port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE)
+
+			info.sort(key=lambda x: x[0] == socket.AF_INET6, reverse=True)
+			for res in info:
+				af, socktype, proto, canonname, sa = res
+				self.socket = None
+				try:
+					self.socket = socket.socket(af, socktype, proto)
+					self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+					# If supported set IPV6_V6ONLY flag to FALSE
+					if af == socket.AF_INET6:
+						self.socket.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
+						print("Socket is listening. IPv6 and IPv4 BOTH supported")
+						print("IP: " + sa[0])
+						print("Port: " + str(sa[1]))
+					self.socket.bind(sa)
+
+					self.socket.listen(1)
+					break
+				except socket.error as msg:
+						continue
+			# Error check
+			if self.socket is None:
+				print ('Could not open socket')
+				sys.exit(2)
+
 			while self.canRun:
 				try:
 					socketclient, address = self.socket.accept()
 					msg_type = socketclient.recv(4)
 					if msg_type == "RETR":
 						print("RETR received")
-						md5 = socketclient.recv(16)
+						md5 = socketclient.recv(32)
 						filename = self.app.context["files_md5"][str(md5)]
 						PeerToPeer(filename, socketclient, self.app).start()
 					else:
