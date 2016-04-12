@@ -35,7 +35,7 @@ class DBControl(threading.Thread):
 						for  i in range(len(results)):
 							p_id, t , ip , port = results[i]
 							if (time.time() - t) > 300:
-								
+
 								remove = "DELETE FROM pacchetti WHERE packetID='"+p_id+"'"
 								cursor.execute(remove)
 
@@ -68,7 +68,7 @@ class Database(object):
 			##ID DEL FILE COMPOSTO DA SESSIONID:MD5
 			cursor.execute(c_str)
 			c_str = '''CREATE TABLE client (ip TEXT, port INT, sessionId TEXT PRIMARY KEY NOT NULL)'''
-			cursor.execute(c_str)	
+			cursor.execute(c_str)
 			c_str = '''CREATE TABLE download (md5 TEXT NOT NULL, count INTEGER,PRIMARY KEY (md5) )'''
 			cursor.execute(c_str)
 
@@ -88,7 +88,7 @@ class Database(object):
 		self.dbControl.start()
 		if not os.path.isfile('database'):
 			self.initializeDatabase()
-    	
+
 	def stop(self):
 		self.dbControl.stop()
 
@@ -143,7 +143,7 @@ class Database(object):
 			print("EXCEPTION trying to remove client with sessionid " + sessionId)
 			print(sys.exc_info()[0])
 			print(sys.exc_info()[1])
-			print(sys.exc_info()[2])	
+			print(sys.exc_info()[2])
 
 	def getClient(self, sessionId):
 		try:
@@ -355,7 +355,7 @@ class Database(object):
 			conn.commit()
 			cursor.close()
 			return None
-			
+
 
 	def getFileMd5(self, filename):
 		conn = sqlite3.connect('database')
@@ -423,10 +423,3 @@ class Database(object):
 		conn.commit()
 		cursor.close()
 		return results
-
-
-
-
-
-
-

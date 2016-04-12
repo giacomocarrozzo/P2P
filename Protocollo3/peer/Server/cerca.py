@@ -46,7 +46,7 @@ class CercaVicini (threading.Thread):
 				print(sys.exc_info()[1], "ERR")
 				print(sys.exc_info()[2], "ERR")
 
-		print("PASSATI 10 SECONDI. FINE RICERCA")	
+		print("PASSATI 10 SECONDI. FINE RICERCA")
 		self.app.peer.isSearching = False
 		#mi setto il superPeer a cui sono collegato
 		if not self.app.peer.iamsuper:
@@ -57,13 +57,3 @@ class CercaVicini (threading.Thread):
 				index = random.randint(0, l-1)
 				self.app.peer.login(self.app.peer.superList[index])
 		return
-
-
-
-
-
-
-
-
-
-

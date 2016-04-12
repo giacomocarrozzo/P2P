@@ -5,7 +5,7 @@ import time
 import sys
 import string
 import random
-##import os
+import os
 
 class PeerToPeer(threading.Thread):
 
@@ -22,7 +22,7 @@ class PeerToPeer(threading.Thread):
 			##filename = self.app.context["files_md5"][str(self.md5)]
 			self.filename = self.filename.strip(" ")
 			print("about to open file " + self.filename)
-			readFile = open(str("shared/"+self.filename) , "rb")
+			readFile = open(str(os.path.normcase("shared/"+self.filename)) , "rb")
 			##size = os.path.getsize("shared/"+filename)
 			index = 0
 			data = readFile.read(1024)
@@ -44,7 +44,7 @@ class PeerToPeer(threading.Thread):
 			print("about to send message " + message)
 			self.socket.send(message)
 			l = len(str(int(len(bytes))))
-			
+
 			l_string = ("0" * (6 - l)) + str(int(len(bytes)))
 
 			##self.socket.send(str(l_string).encode('utf-8'))
@@ -52,7 +52,7 @@ class PeerToPeer(threading.Thread):
 			self.socket.send(str(l_string))
 
 			for i in range(len(bytes)):
-				
+
 				l_data = ("0" * (5 - len(str(lunghezze[i]))) + str(lunghezze[i]))
 				print("sending data to peer " + str(l_data) + " - " + str(l_data).encode('utf-8'))
 				self.socket.send(str(l_data).encode('utf-8'))
@@ -66,9 +66,9 @@ class PeerToPeer(threading.Thread):
 			print(sys.exc_info()[1])
 			print(sys.exc_info()[2])
 			return
-		
+
 class QueryHandler(threading.Thread):
-	
+
 	def __init__(self, ip, port, dest_ip, dest_port):
 		threading.Thread.__init__(self)
 		self.ip = ip
@@ -118,7 +118,7 @@ class QueryHandler(threading.Thread):
 		except:
 			print("eccezzione in queryhandler run")
 			traceback.print_exc()
-		
+
 
 
 class PacketHandler(threading.Thread):
@@ -182,7 +182,7 @@ class PacketHandler(threading.Thread):
 			packetID = self.socket.recv(16)
 			ip = self.socket.recv(39)
 			port = self.socket.recv(5)
-			if self.peer.iamsuper:				
+			if self.peer.iamsuper:
 				res = self.app.db.getPacchetto(packetID)
 				if len(res) == 0:
 					##non ho mai ricevuto questo pacchetto
@@ -292,15 +292,15 @@ class PacketHandler(threading.Thread):
 				else:
 					##sono arrivato qui
 					print("i'm not super, ignoring this..")
-			
+
 				self.socket.close();
 			except:
 				print("EXCEPTION in LOGO")
 				print(sys.exc_info()[0])
 				print(sys.exc_info()[1])
 				print(sys.exc_info()[2])
-				
-		
+
+
 		if self.type == "FIND":
 			try:
 				if self.peer.iamsuper:
@@ -350,7 +350,7 @@ class PacketHandler(threading.Thread):
 			try:
 				if self.peer.iamsuper:
 					print("received query, i'm superpeer")
-					print("QUER received")			
+					print("QUER received")
 					#abbiamo ricevuto un pacchetto di query
 					packetID = self.socket.recv(16)
 					ip =  self.socket.recv(39)
@@ -407,7 +407,7 @@ class PacketHandler(threading.Thread):
 				print(sys.exc_info()[2])
 
 
-			
+
 		if self.type == "AQUE":
 			try:
 				if self.app.peer.iamsuper:
@@ -428,7 +428,7 @@ class PacketHandler(threading.Thread):
 				print(sys.exc_info()[0])
 				print(sys.exc_info()[1])
 				print(sys.exc_info()[2])
-		
+
 		if self.type == "AFIN":
 			if not self.app.peer.iamsuper:
 				print("received AFIN")
@@ -449,7 +449,7 @@ class PacketHandler(threading.Thread):
 							p_port = self.socket.recv(5)
 							print("\t" + str(ip) + " " + str(port))
 							self.app.context["peers_addr"].append(str(ip))
-							key = str(self.app.context["peers_index"])+"_"+str(ip) 
+							key = str(self.app.context["peers_index"])+"_"+str(ip)
 							self.app.context["downloads_available"][str(key)] = dict()
 							self.app.context["downloads_available"][str(key)]["porta"] = port
 							self.app.context["downloads_available"][str(key)]["nome"] = filename.replace(" ","")
@@ -468,7 +468,7 @@ class Receiver(threading.Thread):
 		self.canRun = True
 		threading.Thread.__init__(self)
 		self.app = app
-		self.peer = app.peer 
+		self.peer = app.peer
 		self.address = app.peer.ip_p2p
 		self.port = int(app.peer.port)
 
@@ -486,7 +486,7 @@ class Receiver(threading.Thread):
 		print((self.address, self.port))
 		socket.socket(socket.AF_INET6, socket.SOCK_STREAM).connect((self.address, self.port))
 		self.socket.close()
-	
+
 	def run(self):
 		try:
 			self.socket = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
@@ -504,8 +504,8 @@ class Receiver(threading.Thread):
 						PeerToPeer(filename, socketclient, self.app).start()
 					else:
 						PacketHandler(socketclient, msg_type, self.app, self.address, self.port).start()
-					
-						
+
+
 				except:
 					print("error in receiver run")
 					##self.interface.log("exception inside our server","SUC")

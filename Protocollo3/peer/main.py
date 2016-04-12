@@ -12,6 +12,7 @@ import threading
 import hashlib
 import glob
 import time
+import os
 
 ## fd00:0000:0000:0000:c864:f17c:bb5e:e4d1 giulio
 ## fd00:0000:0000:0000:7481:4a85:5d87:9a52 altri
@@ -43,9 +44,9 @@ class Controller(threading.Thread):
 		##creiamo il database
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, '2001:0000:0000:0000:0000:0000:0000:000b')#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")  
+		self.peer = PeerClient(self, '2001:0000:0000:0000:0000:0000:0000:000b')#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")
 		#self.peer.iamsuper = False
-		
+
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
 		self.cercaVicini = CercaVicini(self)
@@ -116,7 +117,7 @@ class Controller(threading.Thread):
 
 	def calcMD5(self, filename):
 		m = hashlib.md5()
-		readFile = open(str("shared/"+filename) , "r")
+		readFile = open(str(os.path.normcase("shared/"+filename)) , "r")
 		text = readFile.readline()
 		while text:
 			m.update(text)
@@ -137,5 +138,3 @@ if __name__ == '__main__':
 	except:
 		c.stop()
 		print "closing app.."
-
-

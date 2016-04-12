@@ -6,6 +6,7 @@ import glob
 import string
 import random
 import traceback
+import os
 
 class PeerClient(object):
 
@@ -33,12 +34,12 @@ class PeerClient(object):
 							ip = ip + i
 						else:
 							ip = ip + i + ":"
-						
+
 				self.ip_p2p = ip
 
 			else:
 				self.ip_p2p = ip_p2p
-			
+
 			if self.iamsuper:
 				self.port = '30000'
 			else:
@@ -47,11 +48,11 @@ class PeerClient(object):
 			print(self.ip_p2p +":"+self.port)
 			#print("MYADDRESS" + self.ip_p2p +":"+self.port)
 
-			
-			##check if our addresses are in ipv6 format	
+
+			##check if our addresses are in ipv6 format
 			if not (self.checkIPV6Format(self.ip_p2p)):
-				print("indirizzo non corretto")	
-				return	
+				print("indirizzo non corretto")
+				return
 
 
 		except:
@@ -81,9 +82,9 @@ class PeerClient(object):
 				s.close()
 
 				##adding all files
-				files = glob.glob("shared/*.*")
+				files = glob.glob(os.path.normcase("shared/*.*"))
 				for f in files:
-					filename = f.split("shared/")[1]
+					filename = f.split(os.path.normcase("shared/"))[1]
 					md5 = str(self.app.calcMD5(filename))
 					self.addFile(filename,md5)
 
@@ -109,15 +110,15 @@ class PeerClient(object):
 					s.connect(self.directory)
 					##aggiungiamo un file
 					temp = filename + (" " *(100 - len(filename)))
-					
+
 					message = "ADDF"+self.app.context["sessionid"]+md5+temp
 					print("about to send addfile message: " + message)
 					print(str(message))
 					s.send(message)
-	
+
 					message_type = s.recv(4)
 					copy_numbers = s.recv(3)
-	
+
 					print("received " + message_type + " - num files " + copy_numbers)
 					print("RECEIVED " + message_type)
 					print("NUMBER OF COPIES: " + copy_numbers)
@@ -136,14 +137,14 @@ class PeerClient(object):
 					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 					s.connect(self.directory)
 					##aggiungiamo un file
-				
+
 					message = "DELF"+self.app.context["sessionid"]+md5
 					print("about to send remove file message: "+ message)
 					s.send(message)
-	
+
 					message_type = s.recv(4)
 					copy_numbers = s.recv(3)
-					print("RECEIVED message " + message_type + " - numero copie rimosse " + copy_numbers) 
+					print("RECEIVED message " + message_type + " - numero copie rimosse " + copy_numbers)
 					print("RECEIVED " + message_type)
 					print("NUMBER OF COPIES: " + copy_numbers)
 			else:
@@ -158,7 +159,7 @@ class PeerClient(object):
 			if not self.iamsuper:
 				searchString = text.zfill(20)[0:20] ##.get("1.0", END)[0:-1]
 				print("INSIDE SEARCH " + searchString)
-	
+
 				chars = string.ascii_letters + string.digits
 				packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 				if not len(searchString) == 0:
@@ -170,7 +171,7 @@ class PeerClient(object):
 					peers = self.app.db.getAllPeers()
 					'''
 					print("about to send connection")
-	
+
 					temp = searchString
 					if len(temp) < 20:
 						while len(temp) < 20:
@@ -181,10 +182,10 @@ class PeerClient(object):
 					if len(peers) !=0:
 						for i in range(len(peers)):
 							ip, port = peers[i]
-	
+
 							self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 							self.connection_socket.connect((ip, int(port)))
-	
+
 							ttl = "02"
 							port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
 							message = "QUER"+packetID+""+self.ip_p2p+""+port_message+""+ttl+""+temp
@@ -235,7 +236,7 @@ class PeerClient(object):
 				self.connection_socket.send(message)
 				message_type = self.connection_socket.recv(4)
 				num_chunks = self.connection_socket.recv(6)
-				f = open('shared/'+peer["nome"].strip(" "), "wb")
+				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
 				if int(num_chunks) > 0 :
 					self.app.progress.max = int(num_chunks)
 					for i in range(int(num_chunks)):
