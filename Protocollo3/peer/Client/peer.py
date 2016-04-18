@@ -6,18 +6,17 @@ import glob
 import string
 import random
 import traceback
-import os
 
 class PeerClient(object):
 
 	def __init__(self, app , ip_p2p):
 
-		print("inside peer set")
+		print("[LOG] inside peer set")
 		try:
 			self.app = app
 			self.superList = list()
 			self.isSearching = True
-			self.iamsuper = False
+			self.iamsuper = False # Se TRUE si comporta come supernodo
 			self.directory = None
 
 			if ip_p2p == None:
@@ -34,29 +33,27 @@ class PeerClient(object):
 							ip = ip + i
 						else:
 							ip = ip + i + ":"
-
+						
 				self.ip_p2p = ip
 
 			else:
 				self.ip_p2p = ip_p2p
-
+			
 			if self.iamsuper:
 				self.port = '30000'
+				print("[SUPERNODO] " + self.ip_p2p + ":" + self.port)
 			else:
 				self.port = str(random.randint(40000, 60000))
-			##we obtained a new port between 8000 and 9000
-			print(self.ip_p2p +":"+self.port)
-			#print("MYADDRESS" + self.ip_p2p +":"+self.port)
+				print("[NODO] " + self.ip_p2p + ":" + self.port)
 
-
-			##check if our addresses are in ipv6 format
+			##check if our addresses are in ipv6 format	
 			if not (self.checkIPV6Format(self.ip_p2p)):
-				print("indirizzo non corretto")
-				return
+				print("[ERROR] indirizzo IPv6 non corretto")	
+				return	
 
 
 		except:
-			print("something wrong, sorry ", "ERR")
+			print("[ERROR] error in initializing PeerClient", "ERR")
 			print(sys.exc_info()[0], "ERR")
 			print(sys.exc_info()[1], "ERR")
 			print(sys.exc_info()[2], "ERR")
@@ -64,102 +61,119 @@ class PeerClient(object):
 
 	def login(self, directory):
 		try:
-			if not self.iamsuper:
-				s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+			if not self.iamsuper: # NODO normale, login
 				self.directory = directory
-				s.connect(directory)
-				##mandiamo il messaggio di login
+
+				if random.randint(0,1)==0:
+					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					directory = ( self.directory[0].split("|")[0], self.directory[1] )
+					s.connect(directory)
+				else:
+					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+					directory = ( self.directory[0].split("|")[1], self.directory[1] )
+					s.connect(directory)
+
+				# Invio il login
 				port_message = ("0" * (5 - len(str(self.port)))) + self.port
 				message = "LOGI"+str(self.ip_p2p) + port_message
-				print("about to send login message " + message)
-				print(message)
+				print("[SENDING] [LOGI]: " + message)
+
 				s.send(message)
+
+				# Ricevo l'ID
 				message_type = s.recv(4)
 				session_id = s.recv(16)
-				print("TYPE " + message_type)
-				print("SESSION ID "+session_id)
+				print("[RECEIVED] [" + message_type + "] received ID: " + session_id)
 				self.app.receivedLogin( session_id )
 				s.close()
 
-				##adding all files
-				files = glob.glob(os.path.normcase("shared/*.*"))
+				# Aggiungo i file
+				files = glob.glob("shared/*.*")
 				for f in files:
-					filename = f.split(os.path.normcase("shared/"))[1]
+					filename = f.split("shared/")[1]
 					md5 = str(self.app.calcMD5(filename))
 					self.addFile(filename,md5)
 
-				##self.peer_server = PeerServer(self.ip_p2p , self.port , self)
-				##self.peer_server.start()
+			else: # SUPERNODO, non deve fare login
+				print "[LOG] I'm supernode, i can't login."
 
-				## initializine background service
-				##self.background_service = BackgroundService(self)
-				##self.background_service.start()
-			else:
-				print "I'm super peer, i can't login."
 		except Exception as e:
-			print("exception in login method")
+			print("[ERROR] exception in login")
 			traceback.print_exc()
 
 	def addFile(self, filename, md5):
 		try:
-			if not self.iamsuper:
+			if not self.iamsuper: # NODO
 				if self.app.context["sessionid"]:
-					print("about to add a new file " + filename + " - " + md5)
-					print("about to add new file " + filename + " - " + md5)
-					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-					s.connect(self.directory)
-					##aggiungiamo un file
-					temp = filename + (" " *(100 - len(filename)))
+					print("[LOG] about to add a new file " + filename + " - " + md5)
+					print("[LOG] about to add new file " + filename + " - " + md5)
 
+					if random.randint(0,1)==0:
+						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+						directory = ( self.directory[0].split("|")[0], self.directory[1] )
+						s.connect(directory)
+					else:
+						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+						directory = ( self.directory[0].split("|")[1], self.directory[1] )
+						s.connect(directory)
+
+					temp = filename + (" " *(100 - len(filename)))				
 					message = "ADDF"+self.app.context["sessionid"]+md5+temp
-					print("about to send addfile message: " + message)
-					print(str(message))
+					print("[SENDING] [ADDF]: " + message)
 					s.send(message)
-
+	
 					message_type = s.recv(4)
 					copy_numbers = s.recv(3)
 
-					print("received " + message_type + " - num files " + copy_numbers)
-					print("RECEIVED " + message_type)
-					print("NUMBER OF COPIES: " + copy_numbers)
+					print("[RECEIVED] [" + message_type + "] number of copies: " + copy_numbers)
+					s.close()
+
 				else:
-					print("non hai ancora un sessionid")
+					print("[ERROR]: non hai ancora un sessionid")
 			else:
-				print("i'm super, i can't add files.")
+				print("[LOG] I'm supernode, i can't add files.")
 		except:
-			print("exception in adding new file")
+			print("[ERROR]: exception in adding new file")
 			traceback.print_exc()
 
 	def removeFile(self, filename, md5):
 		try:
-			if not self.iamsuper:
+			if not self.iamsuper: # NODO
 				if self.app.context["sessionid"]:
-					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-					s.connect(self.directory)
-					##aggiungiamo un file
 
+					if random.randint(0,1)==0:
+						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+						directory = ( self.directory[0].split("|")[0], self.directory[1] )
+						s.connect(directory)
+					else:
+						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+						directory = ( self.directory[0].split("|")[1], self.directory[1] )
+						s.connect(directory)
+				
 					message = "DELF"+self.app.context["sessionid"]+md5
-					print("about to send remove file message: "+ message)
+					print("[SENDING] [DELF]: " + message)
 					s.send(message)
-
+	
 					message_type = s.recv(4)
 					copy_numbers = s.recv(3)
-					print("RECEIVED message " + message_type + " - numero copie rimosse " + copy_numbers)
-					print("RECEIVED " + message_type)
-					print("NUMBER OF COPIES: " + copy_numbers)
+
+					print("[RECEIVED] [" + message_type + "] number of copies removed: " + copy_numbers)
+					s.close()
+
 			else:
-				print("I'm super, i can't remove files")
+				print("[LOG] I'm supernode, i can't remove files")
 		except:
-			print("exception in removing file")
+			print("[ERROR]: exception in removing file")
 			traceback.print_exc()
 
 
 	def searchFile(self, text):
 		try:
-			if not self.iamsuper:
-				searchString = text.zfill(20)[0:20] ##.get("1.0", END)[0:-1]
-				print("INSIDE SEARCH " + searchString)
 
+			if not self.iamsuper: # NODO
+				searchString = text.zfill(20)[0:20]
+				print("[LOG] Inside search " + searchString)
+	
 				chars = string.ascii_letters + string.digits
 				packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 				if not len(searchString) == 0:
@@ -167,47 +181,40 @@ class PeerClient(object):
 					self.app.context["peers_addr"] = list()
 					self.app.context["downloads_available"] = dict()
 					self.app.context["peers_index"] = 0
-					'''
-					peers = self.app.db.getAllPeers()
-					'''
-					print("about to send connection")
 
+					print("[LOG] Preparing searchString...")
+	
 					temp = searchString
 					if len(temp) < 20:
 						while len(temp) < 20:
 							temp = temp + " "
 					elif len(temp) > 20:
 						temp = temp[0:20]
-					'''
-					if len(peers) !=0:
-						for i in range(len(peers)):
-							ip, port = peers[i]
 
-							self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-							self.connection_socket.connect((ip, int(port)))
+					# Sending query to my directory
+					if random.randint(0,1)==0:
+						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+						directory = ( self.directory[0].split("|")[0], self.directory[1] )
+						s.connect(directory)
+					else:
+						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+						directory = ( self.directory[0].split("|")[1], self.directory[1] )
+						s.connect(directory)
 
-							ttl = "02"
-							port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
-							message = "QUER"+packetID+""+self.ip_p2p+""+port_message+""+ttl+""+temp
-							print("SENDING " + message)
-							self.connection_socket.send(message)
-							self.connection_socket.close()
-					'''
-					#sending query to my directory
-					s  = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-					s.connect(self.directory)
 					ttl = "02"
 					port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
-					#message = "FIND"+packetID+""+self.ip_p2p+""+port_message+""+ttl+""+temp
+
 					message = "FIND" + self.app.context['sessionid'] + searchString
-					print("sending query message: " + message)
-					print("SENDING " + message)
+
+					print("[SENDING] [FIND]: " + message)
 					s.send(message)
 					s.close()
+
 			else:
-				print("i'm super peer, i can't search files manually")
+				print("[LOG] I'm super peer, i can't search files manually")
+
 		except:
-			print("EXCEPTION IN SEARCH FILE")
+			print("[ERROR]: exception in search file")
 			traceback.print_exc()
 
 	def addNear(self, text, port):
@@ -218,50 +225,58 @@ class PeerClient(object):
 
 	def downloadFile(self, text):
 		try:
-			print("ABOUT TO DOWNLOAD FROM " + text)
 			s = text
 			i = self.app.context["peers_addr"].index(s)
-			print("INSIDE DOWNLOAD ")
+			print("[LOG] inside DOWNLOAD")
 			key = str(i)+"_"+str(s)
+
 			if(self.app.context["downloads_available"][str(key)]):
 				peer = self.app.context["downloads_available"][str(key)]
-				print(peer)
-				##possiamo far partire il download del file
+
+				# Possiamo far partire il download del file
 				destination = (s , int(peer["porta"]))
-				print(destination)
-				print(peer["md5"])
-				self.connection_socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-				self.connection_socket.connect(destination)
-				message = "RETR"+str(peer["md5"])
+				print("[LOG] About to download file " + text + " with hash " + md5 + " from " + destination)
+
+				# Decido vIP a seconda della lunghezza dell'indirizzo
+				if len(s)<20:
+					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				else:
+					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+
+				s.connect(destination)
+				message = "RETR"+str(peer["md5"])		
+				print("[SENDING] [RETR]: " + message)
 				self.connection_socket.send(message)
+
 				message_type = self.connection_socket.recv(4)
 				num_chunks = self.connection_socket.recv(6)
-				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
+				print("[RECEIVED] [" + message_type + "] number of chunks: " + num_chunks)
+
+				f = open('shared/'+peer["nome"].strip(" "), "wb")
 				if int(num_chunks) > 0 :
 					self.app.progress.max = int(num_chunks)
 					for i in range(int(num_chunks)):
 						len_chunk = self.connection_socket.recv(5)
+						print("[RECEIVED] [CHUNK-LENGTH]: " + len_chunk)
 						if (int(len_chunk) > 0):
 							self.app.progress.value = self.app.progress.value + 1
 							chunk = self.connection_socket.recv(int(len_chunk))
-							#f.write(chunk)
-							#print("downloading chunk " + str(len_chunk))
+
 							while len(chunk) < int(len_chunk):
 								new_data = self.connection_socket.recv(int(len_chunk)-len(chunk))
-								#f.write(new_data)
 								chunk = chunk + new_data
 							f.write(chunk)
+					print("[LOG] status OK, file successfully downloaded")
 					f.close()
 
 				self.connection_socket.close()
 				self.app.progress.value = 0
 
 			else:
-				print("NOT AVAILABLE")
+				print("[LOG] File NOT AVAILABLE")
 		except:
-			print("exception in download file")
+			print("[ERROR] exception in download file")
 			traceback.print_exc()
-
 
 
 	def checkIPV6Format(self, address):
