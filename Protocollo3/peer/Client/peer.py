@@ -64,7 +64,7 @@ class PeerClient(object):
 			if not self.iamsuper: # NODO normale, login
 				self.directory = directory
 
-				if random.randint(0,1)==0:
+				if 1:#random.randint(0,1)==0:
 					s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 					directory = ( self.directory[0].split("|")[0], self.directory[1] )
 					s.connect(directory)
@@ -108,7 +108,7 @@ class PeerClient(object):
 					print("[LOG] about to add a new file " + filename + " - " + md5)
 					print("[LOG] about to add new file " + filename + " - " + md5)
 
-					if random.randint(0,1)==0:
+					if 1:#random.randint(0,1)==0:
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 						directory = ( self.directory[0].split("|")[0], self.directory[1] )
 						s.connect(directory)
@@ -141,7 +141,7 @@ class PeerClient(object):
 			if not self.iamsuper: # NODO
 				if self.app.context["sessionid"]:
 
-					if random.randint(0,1)==0:
+					if 1:# random.randint(0,1)==0:
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 						directory = ( self.directory[0].split("|")[0], self.directory[1] )
 						s.connect(directory)
@@ -192,7 +192,7 @@ class PeerClient(object):
 						temp = temp[0:20]
 
 					# Sending query to my directory
-					if random.randint(0,1)==0:
+					if 1:#random.randint(0,1)==0:
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 						directory = ( self.directory[0].split("|")[0], self.directory[1] )
 						s.connect(directory)
