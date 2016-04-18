@@ -30,7 +30,7 @@ class CercaVicini (threading.Thread):
 					for i in range(len(peers)):
 						ip , port = peers[i]
 
-						if random.randint(0,1)==0:
+						if 1:#random.randint(0,1)==0:
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							ip = ip.split("|")[0]
 						else:

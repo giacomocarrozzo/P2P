@@ -157,7 +157,7 @@ class PacketHandler(threading.Thread):
 								for i in range(len(peers)):
 									p_ip , p_port = peers[i]
 
-									if random.randint(0,1)==0:
+									if 1:#random.randint(0,1)==0:
 										print("ipv4")
 										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 										p_ip = p_ip.split("|")[0]
@@ -174,15 +174,23 @@ class PacketHandler(threading.Thread):
 									s.close()
 						else:
 							#sono un super peer e posso rispondere
-							s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-							s.connect((ip, int(port)))
+							if 1:#random.randint(0,1)==0:
+										print("[LOG] ipv4")
+										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+										ip = ip.split("|")[0]
+										s.connect((ip, int(port)))
+									else:
+										print("[LOG] ipv6")
+										s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+										ip = ip.split("|")[1]
+										s.connect((ip, int(port)))
 							port_message = ("0" * (5- int(len(str(self.port))))) + str(self.port)
 							message = "ASUP" + packetID + self.address + port_message
 							s.send(message)
 							s.close()
 				self.socket.close()
 			except:
-				print("SONO CRASHATO in type SUPE")
+				print("[ERROR] Error while handling SUPE")
 				print(sys.exc_info()[0])
 				print(sys.exc_info()[1])
 				print(sys.exc_info()[2])
@@ -209,7 +217,6 @@ class PacketHandler(threading.Thread):
 			try:
 				#ho ricevuto una richiesta di login
 				#dovrei essere un super peer, comunque controllo di esserlo
-				print("RECEIVED LOGI")
 				print("RECEIVED LOGI")
 				if self.peer.iamsuper:
 					print("i'm super peer, i can handle this.")
@@ -345,7 +352,7 @@ class PacketHandler(threading.Thread):
 						for i in range(len(peers)):
 							p_ip , p_port = peers[i]
 
-							if random.randint(0,1)==0:
+							if 1:#random.randint(0,1)==0:
 								print("ipv4")
 								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 								p_ip = p_ip.split("|")[0]
@@ -412,7 +419,7 @@ class PacketHandler(threading.Thread):
 								for i in range(len(peers)):
 									p_ip , p_port = peers[i]
 
-									if random.randint(0,1)==0:
+									if 1:#random.randint(0,1)==0:
 										print("ipv4")
 										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 										p_ip = p_ip.split("|")[0]
