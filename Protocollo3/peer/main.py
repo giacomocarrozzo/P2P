@@ -12,7 +12,7 @@ import threading
 import hashlib
 import glob
 import time
-import os
+import sys
 
 ## fd00:0000:0000:0000:c864:f17c:bb5e:e4d1 giulio
 ## fd00:0000:0000:0000:7481:4a85:5d87:9a52 altri
@@ -31,7 +31,6 @@ import os
 class Controller(threading.Thread):
 
 	def __init__ (self):
-		#super(Controller, self).__init__(**kwargs)
 		threading.Thread.__init__(self)
 
 		self.canRun = True
@@ -39,23 +38,13 @@ class Controller(threading.Thread):
 		self.context['peers_index'] = 0
 		self.context['file_names'] = list()
 		self.context["peers_addr"] = list()
-		#self.adapter = la.ListAdapter(data=self.context['file_names'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
-		#self.peerAdapter = la.ListAdapter(data=self.context['peers_addr'],selection_mode='single',allow_empty_selection=False,cls=lv.ListItemButton)
-		##creiamo il database
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, '2001:0000:0000:0000:0000:0000:0000:000b')#"fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e")
-		#self.peer.iamsuper = False
-
+		self.peer = PeerClient(self, '010.014.225.139|fe80:0000:0000:d253:49ff:fece:9247')
+		
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
 		self.cercaVicini = CercaVicini(self)
-
-		#self.adapter.bind(on_selection_change=self.selectedItem)
-		#self.fileList.adapter = self.adapter
-
-		#self.peerAdapter.bind(on_selection_change=self.peer.downloadFile)
-		#self.peerList.adapter = self.peerAdapter
 
 		self.background.start()
 		self.receiver.start()
@@ -75,9 +64,10 @@ class Controller(threading.Thread):
 				print "                               #"
 				print "                               #"
 				print "      MENU                     #"
-				print "      1. add near           	 #"
+				print "      1. add near           	  #"
 				print "      2. search                #"
 				print "      3. download              #"
+				print "      4. exit                  #"
 				print "                               #"
 				print "                               #"
 				print "################################"
@@ -94,8 +84,8 @@ class Controller(threading.Thread):
 					to_down = raw_input("inserisci dati download: ")
 					self.peer.downloadFile(to_down)
 				elif choice == "4":
-					pass
-					#c.logout()
+					self.stop()
+					sys.exit(1)
 			print "closing app.."
 			return
 		except KeyboardInterrupt:
@@ -104,27 +94,26 @@ class Controller(threading.Thread):
 			return
 
 	def stop(self):
-		print("chiudo1")
+		print("[LOG] Closing background service...")
 		self.background.stop()
-		print("chiudo2")
+		print("[LOG] Closing receiver...")
 		self.receiver.stop()
-		print("chiudo3")
+		print("[LOG] Closing supernodes search...")
 		self.cercaVicini.stop()
-		print("chiudo4")
+		print("[LOG] Closing DB...")
 		self.db.stop()
-		print("chiudo5")
+		print("[LOG] Closing main thread...")
 		self.canRun = False
 
 	def calcMD5(self, filename):
 		m = hashlib.md5()
-		readFile = open(str(os.path.normcase("shared/"+filename)) , "r")
+		readFile = open(str("shared/"+filename) , "r")
 		text = readFile.readline()
 		while text:
 			m.update(text)
 			text = readFile.readline()
-
 		digest = m.hexdigest()
-		digest = digest[:16]
+		digest = digest[:32]
 		return digest
 
 	def receivedLogin( self, sessionId ):
@@ -137,4 +126,6 @@ if __name__ == '__main__':
 		c.start()
 	except:
 		c.stop()
-		print "closing app.."
+		print "Closing app..."
+
+
