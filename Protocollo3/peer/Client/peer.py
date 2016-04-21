@@ -33,23 +33,23 @@ class PeerClient(object):
 							ip = ip + i
 						else:
 							ip = ip + i + ":"
-						
+
 				self.ip_p2p = ip
 
 			else:
 				self.ip_p2p = ip_p2p
-			
+
 			if self.iamsuper:
-				self.port = '30000'
+				self.port = '3000'
 				print("[SUPERNODO] " + self.ip_p2p + ":" + self.port)
 			else:
-				self.port = str(random.randint(40000, 60000))
+				self.port = "40000"#str(random.randint(40000, 60000))
 				print("[NODO] " + self.ip_p2p + ":" + self.port)
 
-			##check if our addresses are in ipv6 format	
+			##check if our addresses are in ipv6 format
 			if not (self.checkIPV6Format(self.ip_p2p)):
-				print("[ERROR] indirizzo IPv6 non corretto")	
-				return	
+				print("[ERROR] indirizzo IPv6 non corretto")
+				return
 
 
 		except:
@@ -117,11 +117,11 @@ class PeerClient(object):
 						directory = ( self.directory[0].split("|")[1], self.directory[1] )
 						s.connect(directory)
 
-					temp = filename + (" " *(100 - len(filename)))				
+					temp = filename + (" " *(100 - len(filename)))
 					message = "ADDF"+self.app.context["sessionid"]+md5+temp
 					print("[SENDING] [ADDF]: " + message)
 					s.send(message)
-	
+
 					message_type = s.recv(4)
 					copy_numbers = s.recv(3)
 
@@ -149,11 +149,11 @@ class PeerClient(object):
 						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 						directory = ( self.directory[0].split("|")[1], self.directory[1] )
 						s.connect(directory)
-				
+
 					message = "DELF"+self.app.context["sessionid"]+md5
 					print("[SENDING] [DELF]: " + message)
 					s.send(message)
-	
+
 					message_type = s.recv(4)
 					copy_numbers = s.recv(3)
 
@@ -173,7 +173,7 @@ class PeerClient(object):
 			if not self.iamsuper: # NODO
 				searchString = text.zfill(20)[0:20]
 				print("[LOG] Inside search " + searchString)
-	
+
 				chars = string.ascii_letters + string.digits
 				packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 				if not len(searchString) == 0:
@@ -183,7 +183,7 @@ class PeerClient(object):
 					self.app.context["peers_index"] = 0
 
 					print("[LOG] Preparing searchString...")
-	
+
 					temp = searchString
 					if len(temp) < 20:
 						while len(temp) < 20:
@@ -244,7 +244,7 @@ class PeerClient(object):
 					s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 
 				s.connect(destination)
-				message = "RETR"+str(peer["md5"])		
+				message = "RETR"+str(peer["md5"])
 				print("[SENDING] [RETR]: " + message)
 				self.connection_socket.send(message)
 

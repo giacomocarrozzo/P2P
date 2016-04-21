@@ -14,19 +14,10 @@ import glob
 import time
 import sys
 
-## fd00:0000:0000:0000:c864:f17c:bb5e:e4d1 giulio
-## fd00:0000:0000:0000:7481:4a85:5d87:9a52 altri
-## fd00:0000:0000:0000:22c9:d0ff:fe47:70a3
-## fd00:0000:0000:0000:c646:19ff:fe69:b7a5
-## fd00:0000:0000:0000:acdf:bd40:555a:59e4
-## fd00:0000:0000:0000:9afe:94ff:fe3f:b0f2
-## fd00:0000:0000:0000:b89a:58cf:3c32:10a6
-
-## michael fd00:0000:0000:0000:5626:96ff:fedb:a4ad
-## marco fd00:0000:0000:0000:e6ce:8fff:fe0a:5e0e
-## mahdi fd00:0000:0000:0000:ddb9:fc81:21d4:62c0
-## danny fd00:0000:0000:0000:9200:4eff:feb0:0dd4
-
+#marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae
+#enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef
+#giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca
+#andrea 192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247
 
 class Controller(threading.Thread):
 
@@ -41,7 +32,7 @@ class Controller(threading.Thread):
 		self.db = Database(self)
 
 		self.peer = PeerClient(self, '010.014.225.139|fe80:0000:0000:d253:49ff:fece:9247')
-		
+
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
 		self.cercaVicini = CercaVicini(self)
@@ -127,5 +118,3 @@ if __name__ == '__main__':
 	except:
 		c.stop()
 		print "Closing app..."
-
-

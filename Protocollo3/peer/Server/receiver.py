@@ -175,15 +175,15 @@ class PacketHandler(threading.Thread):
 						else:
 							#sono un super peer e posso rispondere
 							if 1:#random.randint(0,1)==0:
-										print("[LOG] ipv4")
-										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-										ip = ip.split("|")[0]
-										s.connect((ip, int(port)))
-									else:
-										print("[LOG] ipv6")
-										s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
-										ip = ip.split("|")[1]
-										s.connect((ip, int(port)))
+								print("[LOG] ipv4")
+								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+								ip = ip.split("|")[0]
+								s.connect((ip, int(port)))
+							else:
+								print("[LOG] ipv6")
+								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+								ip = ip.split("|")[1]
+								s.connect((ip, int(port)))
 							port_message = ("0" * (5- int(len(str(self.port))))) + str(self.port)
 							message = "ASUP" + packetID + self.address + port_message
 							s.send(message)
@@ -546,7 +546,7 @@ class Receiver(threading.Thread):
 					self.socket.bind(sa)
 
 					self.socket.listen(1)
-					break
+
 				except socket.error as msg:
 						continue
 			# Error check
