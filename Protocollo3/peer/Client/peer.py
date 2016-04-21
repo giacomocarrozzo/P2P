@@ -19,25 +19,7 @@ class PeerClient(object):
 			self.iamsuper = False # Se TRUE si comporta come supernodo
 			self.directory = None
 
-			if ip_p2p == None:
-
-				short_ip = socket.getaddrinfo(socket.gethostname(),None, socket.AF_INET6)[1][4][0]
-				short_ip_a = short_ip.split(":")
-				last = short_ip_a[-1]
-				ip = ""
-				for i in short_ip_a:
-					if len(i) == 0:
-						ip = ip + "0000:0000:0000:"
-					else:
-						if i == last:
-							ip = ip + i
-						else:
-							ip = ip + i + ":"
-
-				self.ip_p2p = ip
-
-			else:
-				self.ip_p2p = ip_p2p
+			self.ip_p2p = ip_p2p
 
 			if self.iamsuper:
 				self.port = '3000'
@@ -45,11 +27,6 @@ class PeerClient(object):
 			else:
 				self.port = "40000"#str(random.randint(40000, 60000))
 				print("[NODO] " + self.ip_p2p + ":" + self.port)
-
-			##check if our addresses are in ipv6 format
-			if not (self.checkIPV6Format(self.ip_p2p)):
-				print("[ERROR] indirizzo IPv6 non corretto")
-				return
 
 
 		except:
@@ -171,7 +148,7 @@ class PeerClient(object):
 		try:
 
 			if not self.iamsuper: # NODO
-				searchString = text.zfill(20)[0:20]
+
 				print("[LOG] Inside search " + searchString)
 
 				chars = string.ascii_letters + string.digits
@@ -191,6 +168,8 @@ class PeerClient(object):
 					elif len(temp) > 20:
 						temp = temp[0:20]
 
+					searchString = temp
+					
 					# Sending query to my directory
 					if 1:#random.randint(0,1)==0:
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

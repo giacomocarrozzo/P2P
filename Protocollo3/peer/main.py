@@ -31,7 +31,7 @@ class Controller(threading.Thread):
 		self.context["peers_addr"] = list()
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, '010.014.225.139|fe80:0000:0000:d253:49ff:fece:9247')
+		self.peer = PeerClient(self, '192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca')
 
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
