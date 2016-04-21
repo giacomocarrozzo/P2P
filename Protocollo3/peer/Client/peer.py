@@ -65,9 +65,9 @@ class PeerClient(object):
 				s.close()
 
 				# Aggiungo i file
-				files = glob.glob("shared/*.*")
+				files = glob.glob(os.path.normcase("shared/*.*"))
 				for f in files:
-					filename = f.split("shared/")[1]
+					filename = f.split(os.path.normcase("shared/"))[1]
 					md5 = str(self.app.calcMD5(filename))
 					self.addFile(filename,md5)
 
@@ -169,7 +169,7 @@ class PeerClient(object):
 						temp = temp[0:20]
 
 					searchString = temp
-					
+
 					# Sending query to my directory
 					if 1:#random.randint(0,1)==0:
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -231,7 +231,7 @@ class PeerClient(object):
 				num_chunks = self.connection_socket.recv(6)
 				print("[RECEIVED] [" + message_type + "] number of chunks: " + num_chunks)
 
-				f = open('shared/'+peer["nome"].strip(" "), "wb")
+				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
 				if int(num_chunks) > 0 :
 					self.app.progress.max = int(num_chunks)
 					for i in range(int(num_chunks)):
