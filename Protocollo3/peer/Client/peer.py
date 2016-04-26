@@ -17,10 +17,10 @@ class PeerClient(object):
 			self.app = app
 			self.superList = list()
 			self.isSearching = True
-			self.iamsuper = False # Se TRUE si comporta come supernodo
+			self.iamsuper = True # Se TRUE si comporta come supernodo
 			self.directory = None
 			self.ip_p2p = ip_p2p
-
+			
 			if self.iamsuper:
 				self.port = '03000'
 				print("[SUPERNODO] " + self.ip_p2p + ":" + self.port)
@@ -36,7 +36,7 @@ class PeerClient(object):
 
 	def login(self, directory):
 		try:
-			if not self.iamsuper: # NODO normale, login
+			if 1: #not self.iamsuper: # NODO normale, login
 				self.directory = directory
 
 				if 1:#random.randint(0,1)==0:
@@ -76,9 +76,33 @@ class PeerClient(object):
 			print("[ERROR] exception in login")
 			traceback.print_exc()
 
+	# NEW logout
+	def logout(self):
+		if (self.app.context['sessionid']):
+			if 1: #random.randint(0,1)==0:
+				print("[LOG] ipv4")
+				s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+				directory = ( self.directory[0].split("|")[0], self.directory[1] )
+			else:
+				print("[LOG] ipv6")
+				s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+				directory = ( self.directory[0].split("|")[1], self.directory[1] )
+			s.connect(directory)
+			##mandiamo messsaggio di logout
+			message = "LOGO"+str(self.app.context['sessionid'])
+			print("[SENDING] LOGOUT: " + message)
+			s.send(message)
+
+			message_type = s.recv(4)
+			file_deleted = s.recv(3)
+			print("[RECEIVED] Message: " + message_type)
+			print("Removed: " + file_deleted + " FILES")
+
+			s.close()
+
 	def addFile(self, filename, md5):
 		try:
-			if not self.iamsuper: # NODO
+			if 1: #not self.iamsuper: # NODO
 				if self.app.context["sessionid"]:
 					print("[LOG] about to add a new file " + filename + " - " + md5)
 
@@ -91,11 +115,11 @@ class PeerClient(object):
 						directory = ( self.directory[0].split("|")[1], self.directory[1] )
 						s.connect(directory)
 
-					temp = filename + (" " *(100 - len(filename)))
+					temp = filename + (" " *(100 - len(filename)))				
 					message = "ADDF"+self.app.context["sessionid"]+md5+temp
 					print("[SENDING] [ADDF]: " + message)
 					s.send(message)
-
+	
 					#message_type = s.recv(4)
 					#copy_numbers = s.recv(3)
 
@@ -112,7 +136,7 @@ class PeerClient(object):
 
 	def removeFile(self, filename, md5):
 		try:
-			if not self.iamsuper: # NODO
+			if 1: #not self.iamsuper: # NODO
 				if self.app.context["sessionid"]:
 
 					if 1:# random.randint(0,1)==0:
@@ -123,11 +147,11 @@ class PeerClient(object):
 						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 						directory = ( self.directory[0].split("|")[1], self.directory[1] )
 						s.connect(directory)
-
+				
 					message = "DELF"+self.app.context["sessionid"]+md5
 					print("[SENDING] [DELF]: " + message)
 					s.send(message)
-
+	
 					#message_type = s.recv(4)
 					#copy_numbers = s.recv(3)
 
@@ -144,9 +168,9 @@ class PeerClient(object):
 	def searchFile(self, searchString):
 		try:
 
-			if not self.iamsuper: # NODO
+			if 1: #not self.iamsuper: # NODO
 				print("[LOG] Inside search " + searchString)
-
+	
 				chars = string.ascii_letters + string.digits
 				packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 				if not len(searchString) == 0:
@@ -156,7 +180,7 @@ class PeerClient(object):
 					self.app.context["peers_index"] = 0
 
 					print("[LOG] Preparing searchString...")
-
+	
 					temp = searchString
 					if len(temp) < 20:
 						while len(temp) < 20:
@@ -199,7 +223,9 @@ class PeerClient(object):
 
 	def downloadFile(self, text):
 		try:
-			address = text
+			address = text.split("_")[0] # modificato da address = text
+			md5 = text.split("_")[1] # NEW
+			nome_file = text.split("_")[2] # NEW
 			i = self.app.context["peers_addr"].index(address)
 			print("[LOG] inside DOWNLOAD")
 			key = str(i)+"_"+str(address)
@@ -223,7 +249,7 @@ class PeerClient(object):
 					destination = (address , int(peer["porta"]))
 				self.connection_socket.connect(destination)
 
-				message = "RETR"+str(peer["md5"])
+				message = "RETR"+str(md5)		# modificato str(peer["md5"])		 in md5
 				print("[SENDING] [RETR]: " + message)
 				self.connection_socket.send(message)
 
@@ -231,7 +257,7 @@ class PeerClient(object):
 				num_chunks = self.connection_socket.recv(6)
 				print("[RECEIVED] [" + message_type + "] number of chunks: " + num_chunks)
 
-				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
+				f = open(os.path.normcase('shared/'+nome_file.strip(" ")), "wb")
 				if int(num_chunks) > 0 :
 					#self.app.progress.max = int(num_chunks)
 					for i in range(int(num_chunks)):
@@ -256,3 +282,4 @@ class PeerClient(object):
 		except:
 			print("[ERROR] exception in download file")
 			traceback.print_exc()
+

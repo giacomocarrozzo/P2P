@@ -82,6 +82,8 @@ class QueryHandler(threading.Thread):
 
 	def saveAque(self, ip, port, md5, filename):
 		print("Dentro saveAque")
+		port = "0" * (5 - len(str(port))) + str(port)
+		print(port)
 		self.responseList.append((ip, port, md5, filename))
 
 	def run(self):
@@ -243,9 +245,28 @@ class PacketHandler(threading.Thread):
 				print(sys.exc_info()[1])
 				print(sys.exc_info()[2])
 
+		# NEW gestione logout
+		if self.type == "LOGO":
+			try:
+				if self.peer.iamsuper:
+					sessionID = self.socket.recv(16)
+					print("[LOG] Removing all client files")
+					n = self.app.db.removeAllClientFiles(sessionID)
+					n_delete = "0" * (3 - len(str(n))) + str(n)
+					message = "ALGO" + n_delete
+					self.socket.send(message)
+
+					self.socket.close()
+				else:
+					print("[LOG] I'm not a supernode, i cannot handle this")
+			except:
+				print("[ERROR] Exception in LOGO")
+				print(sys.exc_info()[0])
+				print(sys.exc_info()[1])
+				print(sys.exc_info()[2])
+
 		if self.type == "ALGI":
 			try:
-				print("received algi")
 				print("received algi")
 				if not self.peer.iamsuper:
 					#non devo essere super
@@ -253,16 +274,13 @@ class PacketHandler(threading.Thread):
 					sessionId = self.socket.recv(16)
 					if sessionId == "0000000000000000":
 						print("error in my login. check login method, please.")
-						print("error in my login. check login method, please")
 					else:
 						#e' andato tutto bene
-						print("correct sessionid, printing.. " + sessionId)
 						print("correct sessionid, printing.. " + sessionId)
 						self.app.context["sessionid"] = sessionId
 				else:
 					#pacchetto algi ricevuto, lo ignoro
 					print("i'm super, ignoring algi packet")
-					print("im super, ignoring algi packet")
 				self.socket.close()
 			except:
 				print("EXCEPTION in ALGI")
@@ -306,31 +324,6 @@ class PacketHandler(threading.Thread):
 				print(sys.exc_info()[0])
 				print(sys.exc_info()[1])
 				print(sys.exc_info()[2])
-
-		if self.type == "LOGO":
-			#un peer sta provando a fare il logout da me come superpeer
-			try:
-				if self.peer.iamsuper:
-					print("received logo")
-					print("RECEVED LOGO")
-					sessionId =  self.socket.recv(16)
-					temp_num_files = self.app.db.removeAllClientFiles(sessionId)
-					num = ("0" * (3 - len(str(temp_num_files)))) + str(temp_num_files)
-					message = "ALGO" + num
-					print("about to send algo message " + message)
-					self.socket.send(messsage)
-
-				else:
-					##sono arrivato qui
-					print("i'm not super, ignoring this..")
-
-				self.socket.close();
-			except:
-				print("EXCEPTION in LOGO")
-				print(sys.exc_info()[0])
-				print(sys.exc_info()[1])
-				print(sys.exc_info()[2])
-
 
 		if self.type == "FIND":
 			try:
@@ -499,7 +492,7 @@ class PacketHandler(threading.Thread):
 				print(sys.exc_info()[2])
 
 		if self.type == "AFIN":
-			if not self.app.peer.iamsuper:
+			if 1: #not self.app.peer.iamsuper:
 				print("received AFIN")
 				num_md5 = self.socket.recv(3)
 				print "Numero risultati: ", num_md5
@@ -517,7 +510,7 @@ class PacketHandler(threading.Thread):
 						if not num_copy == 0:
 							p_ip = self.socket.recv(55)
 							p_port = self.socket.recv(5)
-							#print("IP: " + str(p_ip) + " PORT: " + str(p_port))
+							#print("\t" + str(p_ip) + " " + str(p_port))
 							self.app.context["peers_addr"].append(str(p_ip))
 							key = str(self.app.context["peers_index"])+"_"+str(p_ip)
 							self.app.context["downloads_available"][str(key)] = dict()
@@ -526,7 +519,7 @@ class PacketHandler(threading.Thread):
 							self.app.context["downloads_available"][str(key)]["md5"] = md5
 							self.app.context["peers_index"] += 1
 							#print self.app.context['peers_addr']
-							print self.app.context["downloads_available"][str(key)]
+							print str(p_ip)+"_"+md5+"_"+s
 							#self.app.peerList.adapter.data = self.app.context["peers_addr"]
 							#self.app.peerList.populate()
 			else:

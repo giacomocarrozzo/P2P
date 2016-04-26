@@ -31,8 +31,8 @@ class Controller(threading.Thread):
 		self.context["peers_addr"] = list()
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, '192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca')
-
+		self.peer = PeerClient(self, '192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247')
+		
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
 		self.cercaVicini = CercaVicini(self)
@@ -55,11 +55,11 @@ class Controller(threading.Thread):
 				print "                               #"
 				print "                               #"
 				print "      MENU                     #"
-				print "      1. add near           	 #"
+				print "      1. add near           	  #"
 				print "      2. search                #"
 				print "      3. download              #"
-				print "      4. ricerca               #"
-				print "      5. exit                  #"
+				print "      4. login                 #"
+				print "      5. logout                #"
 				print "                               #"
 				print "                               #"
 				print "################################"
@@ -73,13 +73,13 @@ class Controller(threading.Thread):
 					to_search = raw_input("inserisci stringa ricerca: ")
 					self.peer.searchFile(to_search)
 				elif choice == "3":
-					to_down = raw_input("inserisci dati download: ")
+					to_down = raw_input("inserisci dati download (IPv4|IPv6_md5_nomeFile): ")
 					self.peer.downloadFile(to_down)
 				elif choice == "4":
 					self.cercaVicini.start()
 				elif choice == "5":
-					self.stop()
-					sys.exit(1)
+					#self.stop()
+					self.peer.logout()
 			print "closing app.."
 			return
 		except KeyboardInterrupt:
@@ -121,3 +121,5 @@ if __name__ == '__main__':
 	except:
 		c.stop()
 		print "Closing app..."
+
+

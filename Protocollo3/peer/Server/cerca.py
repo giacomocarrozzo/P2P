@@ -22,7 +22,7 @@ class CercaVicini (threading.Thread):
 
 		now = int(round(time.time()))
 		
-		while (int(round(time.time())) - now) < 30 and self.canRun:
+		while (int(round(time.time())) - now) < 30 and self.canRun: #30
 			try:
 				peers = self.app.db.getAllPeers()
 				if len(peers) != 0:
@@ -47,7 +47,7 @@ class CercaVicini (threading.Thread):
 						s.send(message)
 						s.close()
 
-				time.sleep(20)
+				time.sleep(20) #20
 
 			except:
 				self.numErr += 1
@@ -68,6 +68,8 @@ class CercaVicini (threading.Thread):
 				if l > 0:
 					index = random.randint(0, l-1)
 					self.app.peer.login(self.app.peer.superList[index])
+			else:
+				self.app.peer.login( (self.address, int(self.port)) )
 		return
 
 
