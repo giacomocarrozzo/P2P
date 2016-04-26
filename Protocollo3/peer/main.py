@@ -31,8 +31,8 @@ class Controller(threading.Thread):
 		self.context["peers_addr"] = list()
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, '192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247')
-		
+		self.peer = PeerClient(self, '192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca')
+
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
 		self.cercaVicini = CercaVicini(self)
@@ -121,5 +121,3 @@ if __name__ == '__main__':
 	except:
 		c.stop()
 		print "Closing app..."
-
-

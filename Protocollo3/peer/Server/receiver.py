@@ -486,29 +486,31 @@ class PacketHandler(threading.Thread):
 			if not self.app.peer.iamsuper:
 				print("received AFIN")
 				num_md5 = self.socket.recv(3)
-				print "num_md5 ", num_md5
+				print "Numero risultati: ", num_md5
+				print("Risultati:")
 				if not int(num_md5) == 0:
 					for i in range(0, int(num_md5)):
 						md5 = self.socket.recv(32)
 						filename = self.socket.recv(100)
-						s = str(filename)
-						print(str(md5) + " - " + str(filename))
-						print(s + " " + str(md5))
+						s = str(filename).replace(" ","")
+						#print(str(md5) + " - " + str(filename))
+						#print(s + " " + str(md5))
 						self.app.context["peers_addr"].append(s)
 						self.app.context["peers_index"] += 1
 						num_copy = int(self.socket.recv(3))
 						if not num_copy == 0:
 							p_ip = self.socket.recv(55)
 							p_port = self.socket.recv(5)
-							print("\t" + str(p_ip) + " " + str(p_port))
+							#print("IP: " + str(p_ip) + " PORT: " + str(p_port))
 							self.app.context["peers_addr"].append(str(p_ip))
 							key = str(self.app.context["peers_index"])+"_"+str(p_ip)
 							self.app.context["downloads_available"][str(key)] = dict()
 							self.app.context["downloads_available"][str(key)]["porta"] = p_port
-							self.app.context["downloads_available"][str(key)]["nome"] = filename.replace(" ","")
+							self.app.context["downloads_available"][str(key)]["nome"] = s
 							self.app.context["downloads_available"][str(key)]["md5"] = md5
 							self.app.context["peers_index"] += 1
-							print self.app.context['peers_addr']
+							#print self.app.context['peers_addr']
+							print self.app.context["downloads_available"][str(key)]
 							#self.app.peerList.adapter.data = self.app.context["peers_addr"]
 							#self.app.peerList.populate()
 			else:

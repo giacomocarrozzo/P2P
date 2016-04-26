@@ -17,10 +17,10 @@ class PeerClient(object):
 			self.app = app
 			self.superList = list()
 			self.isSearching = True
-			self.iamsuper = True # Se TRUE si comporta come supernodo
+			self.iamsuper = False # Se TRUE si comporta come supernodo
 			self.directory = None
 			self.ip_p2p = ip_p2p
-			
+
 			if self.iamsuper:
 				self.port = '03000'
 				print("[SUPERNODO] " + self.ip_p2p + ":" + self.port)
@@ -91,11 +91,11 @@ class PeerClient(object):
 						directory = ( self.directory[0].split("|")[1], self.directory[1] )
 						s.connect(directory)
 
-					temp = filename + (" " *(100 - len(filename)))				
+					temp = filename + (" " *(100 - len(filename)))
 					message = "ADDF"+self.app.context["sessionid"]+md5+temp
 					print("[SENDING] [ADDF]: " + message)
 					s.send(message)
-	
+
 					#message_type = s.recv(4)
 					#copy_numbers = s.recv(3)
 
@@ -123,11 +123,11 @@ class PeerClient(object):
 						s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 						directory = ( self.directory[0].split("|")[1], self.directory[1] )
 						s.connect(directory)
-				
+
 					message = "DELF"+self.app.context["sessionid"]+md5
 					print("[SENDING] [DELF]: " + message)
 					s.send(message)
-	
+
 					#message_type = s.recv(4)
 					#copy_numbers = s.recv(3)
 
@@ -146,7 +146,7 @@ class PeerClient(object):
 
 			if not self.iamsuper: # NODO
 				print("[LOG] Inside search " + searchString)
-	
+
 				chars = string.ascii_letters + string.digits
 				packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 				if not len(searchString) == 0:
@@ -156,7 +156,7 @@ class PeerClient(object):
 					self.app.context["peers_index"] = 0
 
 					print("[LOG] Preparing searchString...")
-	
+
 					temp = searchString
 					if len(temp) < 20:
 						while len(temp) < 20:
@@ -209,7 +209,7 @@ class PeerClient(object):
 
 				# Possiamo far partire il download del file
 				#destination = (s , int(peer["porta"]))
-				print("[LOG] About to download file from " + str(destination))
+				#print("[LOG] About to download file from " + str(destination))
 
 				# Decido vIP a seconda della lunghezza dell'indirizzo
 				if 1:#random.randint(0,1)==0:
@@ -223,7 +223,7 @@ class PeerClient(object):
 					destination = (address , int(peer["porta"]))
 				self.connection_socket.connect(destination)
 
-				message = "RETR"+str(peer["md5"])		
+				message = "RETR"+str(peer["md5"])
 				print("[SENDING] [RETR]: " + message)
 				self.connection_socket.send(message)
 
@@ -256,4 +256,3 @@ class PeerClient(object):
 		except:
 			print("[ERROR] exception in download file")
 			traceback.print_exc()
-
