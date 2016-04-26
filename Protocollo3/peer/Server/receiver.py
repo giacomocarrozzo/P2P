@@ -114,13 +114,18 @@ class QueryHandler(threading.Thread):
 						temp = str(temp) + str(ip) + str(port)
 				str_occ = "0" * (3 - len(str(occorrenze))) + str(occorrenze)
 				message = message + str_occ + temp
+
+			if random.randint(0,1)==0:
+				print("IPV4")
+			else:
+				print("IPV6")
 			if 1:#random.randint(0,1)==0:
-				print("[LOG] ipv4")
+				#print("[LOG] ipv4")
 				s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 				self.dest_ip = self.dest_ip.split("|")[0]
 				s.connect((self.dest_ip, int(self.dest_port)))
 			else:
-				print("[LOG] ipv6")
+				#print("[LOG] ipv6")
 				s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 				self.dest_ip = self.dest_ip.split("|")[1]
 				s.connect((self.dest_ip, int(self.dest_port)))
@@ -168,14 +173,17 @@ class PacketHandler(threading.Thread):
 								ttl = ("0" * (2-len(ttl))) + ttl
 								for i in range(len(peers)):
 									p_ip , p_port = peers[i]
-
+									if random.randint(0,1)==0:
+										print("IPV4")
+									else:
+										print("IPV6")
 									if 1:#random.randint(0,1)==0:
-										print("ipv4")
+										#print("ipv4")
 										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 										p_ip = p_ip.split("|")[0]
 										s.connect((p_ip, int(p_port)))
 									else:
-										print("ipv6")
+										#print("ipv6")
 										s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 										p_ip = p_ip.split("|")[1]
 										s.connect((p_ip, int(p_port)))
@@ -186,13 +194,17 @@ class PacketHandler(threading.Thread):
 									s.close()
 						else:
 							#sono un super peer e posso rispondere
+							if random.randint(0,1)==0:
+								print("IPV4")
+							else:
+								print("IPV6")
 							if 1:#random.randint(0,1)==0:
-								print("[LOG] ipv4")
+								#print("[LOG] ipv4")
 								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 								ip = ip.split("|")[0]
 								s.connect((ip, int(port)))
 							else:
-								print("[LOG] ipv6")
+								#print("[LOG] ipv6")
 								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 								ip = ip.split("|")[1]
 								s.connect((ip, int(port)))
@@ -364,14 +376,17 @@ class PacketHandler(threading.Thread):
 					if len(peers) != 0:
 						for i in range(len(peers)):
 							p_ip , p_port = peers[i]
-
+							if 1:
+								print("IPV4")
+							else:
+								print("IPV6")
 							if 1:#random.randint(0,1)==0:
-								print("ipv4")
+								#print("ipv4")
 								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 								p_ip = p_ip.split("|")[0]
 								s.connect((p_ip, int(p_port)))
 							else:
-								print("ipv6")
+								#print("ipv6")
 								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 								p_ip = p_ip.split("|")[1]
 								s.connect((p_ip, int(p_port)))
@@ -406,12 +421,16 @@ class PacketHandler(threading.Thread):
 						files = self.app.db.searchFile(ricerca.replace(" ", ""))
 						if len(files) != 0:
 							#abbiamo trovato i file
+							if random.randint(0,1)==0:
+								print("IPV4")
+							else:
+								print("IPV6")
 							if 1:#random.randint(0,1)==0:
-								print("ipv4")
+								#print("ipv4")
 								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 								ip = ip.split("|")[0]
 							else:
-								print("ipv6")
+								#print("ipv6")
 								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 								ip = ip.split("|")[1]
 							s.connect((ip, int(port)))
@@ -439,14 +458,17 @@ class PacketHandler(threading.Thread):
 							if len(peers) != 0:
 								for i in range(len(peers)):
 									p_ip , p_port = peers[i]
-
+									if random.randint(0,1)==0:
+										print("IPV4")
+									else:
+										print("IPV6")
 									if 1:#random.randint(0,1)==0:
-										print("ipv4")
+										#print("ipv4")
 										s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
 										p_ip = p_ip.split("|")[0]
 										s.connect((p_ip, int(p_port)))
 									else:
-										print("ipv6")
+										#print("ipv6")
 										s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
 										p_ip = p_ip.split("|")[1]
 										s.connect((p_ip, int(p_port)))
@@ -481,7 +503,7 @@ class PacketHandler(threading.Thread):
 					print("PacketID: " + str(packetID))
 					print("ip"+ip+" port"+port+" md5"+md5)
 					print(self.queryPool.keys())
-					print(self.queryPool[packetID])		
+					print(self.queryPool[packetID])
 					self.queryPool[packetID].saveAque(ip, port, md5, filename)
 				else:
 					print("ignoring packet, i'm not super")

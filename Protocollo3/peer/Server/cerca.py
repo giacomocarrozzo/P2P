@@ -21,7 +21,7 @@ class CercaVicini (threading.Thread):
 	def run(self):
 
 		now = int(round(time.time()))
-		
+
 		while (int(round(time.time())) - now) < 30 and self.canRun: #30
 			try:
 				peers = self.app.db.getAllPeers()
@@ -30,7 +30,10 @@ class CercaVicini (threading.Thread):
 					packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
 					for i in range(len(peers)):
 						ip , port = peers[i]
-
+						if random.randint(0,1)==0:
+							print("IPV4")
+						else:
+							print("IPV6")
 						if 1:#random.randint(0,1)==0:
 							s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 							ip = ip.split("|")[0]
@@ -57,7 +60,7 @@ class CercaVicini (threading.Thread):
 				print(sys.exc_info()[2], "ERR")
 
 		if( self.canRun ):
-			print("[LOG] Searching finished. About to connect to supernode.")	
+			print("[LOG] Searching finished. About to connect to supernode.")
 			self.app.peer.isSearching = False
 
 			# Mi collego
@@ -71,13 +74,3 @@ class CercaVicini (threading.Thread):
 			else:
 				self.app.peer.login( (self.address, int(self.port)) )
 		return
-
-
-
-
-
-
-
-
-
-

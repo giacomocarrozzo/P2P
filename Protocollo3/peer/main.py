@@ -14,10 +14,11 @@ import glob
 import time
 import sys
 
-#marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae
-#enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef
-#giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca
-#andrea 192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247
+#marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae - 172.030.014.003|fc00:0000:0000:0000:0000:0000:0014:0003
+#enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef - 172.030.014.001|fc00:0000:0000:0000:0000:0000:0014:0001
+#giacomo 192.168.043.179|fe80:0000:0000:0000:0000:8046:4bbd:91ca - 172.030.014.004|fc00:0000:0000:0000:0000:0000:0014:0004
+#andrea 192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247 - 172.030.014.002|fc00:0000:0000:0000:0000:0000:0014:0002
+#valerio 														- - 172.030.014.005|fc00:0000:0000:0000:0000:0000:0014:0005
 
 class Controller(threading.Thread):
 
@@ -31,8 +32,8 @@ class Controller(threading.Thread):
 		self.context["peers_addr"] = list()
 		self.db = Database(self)
 
-		self.peer = PeerClient(self, '192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247')
-		
+		self.peer = PeerClient(self, '172.030.014.004|fc00:0000:0000:0000:0000:0000:0014:0004')
+
 		self.receiver = Receiver(self)
 		self.background = BackgroundService( self )
 		self.cercaVicini = CercaVicini(self)
@@ -55,7 +56,7 @@ class Controller(threading.Thread):
 				print "                               #"
 				print "                               #"
 				print "      MENU                     #"
-				print "      1. add near           	  #"
+				print "      1. add near         	  #"
 				print "      2. search                #"
 				print "      3. download              #"
 				print "      4. login                 #"
@@ -121,5 +122,3 @@ if __name__ == '__main__':
 	except:
 		c.stop()
 		print "Closing app..."
-
-
