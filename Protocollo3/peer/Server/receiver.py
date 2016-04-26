@@ -81,6 +81,7 @@ class QueryHandler(threading.Thread):
 		self.dest_port = dest_port
 
 	def saveAque(self, ip, port, md5, filename):
+		print("Dentro saveAque")
 		self.responseList.append((ip, port, md5, filename))
 
 	def run(self):
@@ -132,7 +133,7 @@ class QueryHandler(threading.Thread):
 
 class PacketHandler(threading.Thread):
 
-	def __init__ (self, socket, type, app, address, port):
+	def __init__ (self, socket, type, app, address, port, queryPool):
 		threading.Thread.__init__(self)
 		self.socket = socket
 		self.type = type
@@ -140,7 +141,8 @@ class PacketHandler(threading.Thread):
 		self.address = address
 		self.port = port
 		self.peer = self.app.peer
-		self.queryPool = dict()
+		self.queryPool = queryPool
+		#self.queryPool = dict()
 		#query pool si tiene in memoria i query handler.
 
 	def run(self):
@@ -342,8 +344,11 @@ class PacketHandler(threading.Thread):
 					ttl = '02'
 					chars = string.ascii_letters + string.digits
 					packetID = "".join(random.choice(chars) for x in range(random.randint(16, 16)))
+					print("PacketID della find: " + str(packetID))
 					self.queryPool[packetID] = QueryHandler(self.address, self.port, ip, port)
 					self.queryPool[packetID].start()
+					print("QueryPool")
+					print(self.queryPool.keys())
 					files = self.app.db.searchFile(ricerca.replace(" ", ""))
 					print("[LOG] Search finished")
 					print(str(len(files)))
@@ -408,19 +413,27 @@ class PacketHandler(threading.Thread):
 						files = self.app.db.searchFile(ricerca.replace(" ", ""))
 						if len(files) != 0:
 							#abbiamo trovato i file
-							s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+							if 1:#random.randint(0,1)==0:
+								print("ipv4")
+								s = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+								ip = ip.split("|")[0]
+							else:
+								print("ipv6")
+								s = socket.socket(socket.AF_INET6 , socket.SOCK_STREAM)
+								ip = ip.split("|")[1]
 							s.connect((ip, int(port)))
 							for i in range(len(files)):
-								filename, md5 = files[i]
+								session, md5, filename, iduser = files[i]
+								ip, porta, iduser = self.app.db.getClient(session)
 								temp = filename
 								if len(temp) < 100:
 									while len(temp) < 100:
 										temp = temp + " "
 								elif len(temp) > 100:
 									temp = temp[0:100]
-								port_message = ("0" * (5-len(str(self.port)))) + str(self.port)
+								port_message = ("0" * (5-len(str(porta)))) + str(porta) # self.port sostituito con porta
 								#"0" + str(self.port)
-								message = "AQUE" + packetID + self.address + port_message + md5 + temp
+								message = "AQUE" + packetID + ip + port_message + md5 + temp # sostituito self.address con ip
 								print("SENDING " + message)
 								s.send(message)
 							s.close()
@@ -466,13 +479,16 @@ class PacketHandler(threading.Thread):
 				if self.app.peer.iamsuper:
 					self.timerFlag = False
 					print("AQUE received")
-					print("AQUE received")
 					packetID = self.socket.recv(16)
 					ip = self.socket.recv(55)
 					port = self.socket.recv(5)
 					md5 = self.socket.recv(32)
 					filename = self.socket.recv(100)
 					##devo mandare questa roba al query handler con il packetID
+					print("PacketID: " + str(packetID))
+					print("ip"+ip+" port"+port+" md5"+md5)
+					print(self.queryPool.keys())
+					print(self.queryPool[packetID])		
 					self.queryPool[packetID].saveAque(ip, port, md5, filename)
 				else:
 					print("ignoring packet, i'm not super")
@@ -526,6 +542,7 @@ class Receiver(threading.Thread):
 		self.peer = app.peer
 		self.address = app.peer.ip_p2p
 		self.port = int(app.peer.port)
+		self.queryPool = dict()
 
 		self.setDaemon(True)
 		print("PEER ADDRESS "+ self.address + ":" + str(self.port), "SUC")
@@ -580,7 +597,7 @@ class Receiver(threading.Thread):
 						filename = self.app.context["files_md5"][str(md5)]
 						PeerToPeer(filename, socketclient, self.app).start()
 					else:
-						PacketHandler(socketclient, msg_type, self.app, self.address, self.port).start()
+						PacketHandler(socketclient, msg_type, self.app, self.address, self.port, self.queryPool).start()
 
 
 				except:
