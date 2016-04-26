@@ -6,7 +6,6 @@ import glob
 import string
 import random
 import traceback
-import os
 
 class PeerClient(object):
 
@@ -63,9 +62,9 @@ class PeerClient(object):
 				s.close()
 
 				# Aggiungo i file
-				files = glob.glob(os.path.normcase("shared/*.*"))
+				files = glob.glob("shared/*.*")
 				for f in files:
-					filename = f.split(os.path.normcase("shared/"))[1]
+					filename = f.split("shared/")[1]
 					md5 = str(self.app.calcMD5(filename))
 					self.addFile(filename,md5)
 
@@ -81,6 +80,7 @@ class PeerClient(object):
 			if not self.iamsuper: # NODO
 				if self.app.context["sessionid"]:
 					print("[LOG] about to add a new file " + filename + " - " + md5)
+					print("[LOG] about to add new file " + filename + " - " + md5)
 
 					if 1:#random.randint(0,1)==0:
 						s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -96,10 +96,10 @@ class PeerClient(object):
 					print("[SENDING] [ADDF]: " + message)
 					s.send(message)
 	
-					#message_type = s.recv(4)
-					#copy_numbers = s.recv(3)
+					message_type = s.recv(4)
+					copy_numbers = s.recv(3)
 
-					#print("[RECEIVED] [" + message_type + "] number of copies: " + copy_numbers)
+					print("[RECEIVED] [" + message_type + "] number of copies: " + copy_numbers)
 					s.close()
 
 				else:
@@ -141,10 +141,11 @@ class PeerClient(object):
 			traceback.print_exc()
 
 
-	def searchFile(self, searchString):
+	def searchFile(self, text):
 		try:
 
 			if not self.iamsuper: # NODO
+				#searchString = text.zfill(20)[0:20]
 				print("[LOG] Inside search " + searchString)
 	
 				chars = string.ascii_letters + string.digits
@@ -231,14 +232,14 @@ class PeerClient(object):
 				num_chunks = self.connection_socket.recv(6)
 				print("[RECEIVED] [" + message_type + "] number of chunks: " + num_chunks)
 
-				f = open(os.path.normcase('shared/'+peer["nome"].strip(" ")), "wb")
+				f = open('shared/'+peer["nome"].strip(" "), "wb")
 				if int(num_chunks) > 0 :
-					#self.app.progress.max = int(num_chunks)
+					self.app.progress.max = int(num_chunks)
 					for i in range(int(num_chunks)):
 						len_chunk = self.connection_socket.recv(5)
 						print("[RECEIVED] [CHUNK-LENGTH]: " + len_chunk)
 						if (int(len_chunk) > 0):
-							#self.app.progress.value = self.app.progress.value + 1
+							self.app.progress.value = self.app.progress.value + 1
 							chunk = self.connection_socket.recv(int(len_chunk))
 
 							while len(chunk) < int(len_chunk):
@@ -249,7 +250,7 @@ class PeerClient(object):
 					f.close()
 
 				self.connection_socket.close()
-				#self.app.progress.value = 0
+				self.app.progress.value = 0
 
 			else:
 				print("[LOG] File NOT AVAILABLE")

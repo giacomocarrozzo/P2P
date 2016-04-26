@@ -21,7 +21,6 @@ class CercaVicini (threading.Thread):
 	def run(self):
 
 		now = int(round(time.time()))
-		
 		while (int(round(time.time())) - now) < 30 and self.canRun:
 			try:
 				peers = self.app.db.getAllPeers()
