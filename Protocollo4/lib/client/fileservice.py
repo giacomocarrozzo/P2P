@@ -14,7 +14,7 @@ class BackgroundService(threading.Thread):
 		self.setDaemon(True)
 
 	def stop(self):
-		self.canRun = False	
+		self.canRun = False
 
 	def run(self):
 		self.retrieveFiles()
@@ -63,8 +63,8 @@ class BackgroundService(threading.Thread):
 			self.peer.context['files_md5'][str(md5)] = filename
 			self.peer.context['files_sizes'][str(md5)] = size
 
-	
-		
+
+
 	def calcMD5(self, filename):
 		m = hashlib.md5()
 		#print os.path.getsize("shared/"+filename)
@@ -73,14 +73,12 @@ class BackgroundService(threading.Thread):
 		while text:
 			m.update(text)
 			text = readFile.readline()
-
+			
+		m.update(self._client.address)
 		digest = m.hexdigest()
-		digest = digest[:16]
+		#digest = digest[:32]
 		#import os, base64
 		fsize = str(os.path.getsize(str("shared/"+filename)))
 
 		#return (base64.urlsafe_b64encode(os.urandom(16))[:16], fsize)
 		return (digest, fsize)
-
-
-

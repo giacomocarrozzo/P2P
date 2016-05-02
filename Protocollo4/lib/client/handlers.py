@@ -18,10 +18,10 @@ class CustomThread(Thread):
 		self.args = kwargs
 		self.s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 		self.s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
-		
+
 	def recv(self, lenght):
 		return self.s.recv(lenght)
-	
+
 	def run(self):
 		self.__getattribute__("_"+self._method)()
 		try:
@@ -34,7 +34,7 @@ class TrackerThread(CustomThread):
 		self.s.connect(self._client.tracker)
 		print("sending message: " + msg)
 		self.s.send(msg)
-	
+
 	def _login(self):
 		try:
 			print("about to send login")
@@ -61,10 +61,10 @@ class TrackerThread(CustomThread):
 		except:
 			print traceback.format_exc()
 			print("EXCEPTION in login")
-	
+
 	def _addAfterLogin(self, **kwargs):
 		TrackerThread(self._client, "add", **kwargs).start()
-		
+
 	def calcMD5(self, filename):
 		m = hashlib.md5()
 		#print os.path.getsize("shared/"+filename)
@@ -74,14 +74,15 @@ class TrackerThread(CustomThread):
 			m.update(text)
 			text = readFile.readline()
 
+		m.update(self._client.address)
 		digest = m.hexdigest()
-		digest = digest[:16]
+		#digest = digest[:16]
 		#import os, base64
 		fsize = str(os.path.getsize(str("shared/"+filename)))
 
 		#return (base64.urlsafe_b64encode(os.urandom(16))[:16], fsize)
 		return (digest, fsize)
-	
+
 	def _logout(self):
 		try:
 			if self._client.sessionid:
@@ -104,7 +105,7 @@ class TrackerThread(CustomThread):
 		except Exception as e:
 			print e.errno, e.strerror, e.value
 			print("exception in logout")
-			
+
 	def _add(self):
 		try:
 			print "inside add"
@@ -120,7 +121,7 @@ class TrackerThread(CustomThread):
 				print("plen" + str(plen))
 				print("size" + str(fsize))
 				print("sessionid" + self._client.sessionid)
-				message = "ADDR" + self._client.sessionid + fid + fsize + str(plen) + fname
+				message = "ADDR" + self._client.sessionid + fsize + str(plen) + fname + fid
 				print("sending message " + message + " . " + str(len(message)))
 				self.__send(message)
 				msg_type = self.recv(4)
@@ -137,7 +138,7 @@ class TrackerThread(CustomThread):
 		except:
 			print("exception in add file")
 			print traceback.print_exc()
-			
+
 	def _search(self):
 		try:
 			if self._client.sessionid:
@@ -156,7 +157,7 @@ class TrackerThread(CustomThread):
 					num = int(self.recv(3))
 					if not num == 0: self.results = dict()
 					for i in range(0, num):
-						randomId = self.recv(16)
+						randomId = self.recv(32)
 						results.append(randomId)
 						filename = self.recv(100)
 						lenfile = int(self.recv(10))
@@ -171,7 +172,7 @@ class TrackerThread(CustomThread):
 		except:
 			print("exception in search method")
 			print traceback.print_exc()
-			
+
 	def _peers(self):
 		#import binascii
 		try:
@@ -190,7 +191,7 @@ class TrackerThread(CustomThread):
 					print "received AFCH"
 					num = int(self.recv(3))
 					for i in range(0,num):
-						address = self.recv(39)
+						address = self.recv(55)
 						port = self.recv(5)
 						partslist = self.recv(toread)
 						print repr(partslist)
@@ -208,7 +209,7 @@ class TrackerThread(CustomThread):
 		except:
 			print("exception in _peers method")
 			print traceback.print_exc()
-			
+
 	def _downloaded(self):
 		try:
 			if self._client.sessionid:
@@ -230,11 +231,11 @@ class PeerThread(CustomThread):
 		self.s.connect((ip, port))
 		print("sending message: " + msg)
 		self.s.send(msg)
-	
+
 	def __chuncks(self, l):
 		for i in xrange(0, len(l)):
 			yield l[i:i+KB]
-	
+
 	def _upload(self):
 		try:
 			## get file
@@ -261,7 +262,7 @@ class PeerThread(CustomThread):
 			print traceback.format_exc()
 			msg = "AREP"+"0"*6
 		self.args["socket"].send(msg)
-	
+
 	def _download(self):
 		ip, port = self.args["ip"], self.args["port"]
 		randomid, fname, partn = self.args["fid"], self.args["fname"], self.args["part"]
@@ -334,13 +335,13 @@ class Uploader(BaseRequestHandler):
 	def __chuncks(self, l):
 		for i in xrange(0, len(l), KB):
 			yield l[i:i+KB]
-	
+
 	def handle(self):
 		try:
 			msg_type = self.request.recv(4)
 			if msg_type != "RETP":
 				raise Exception
-			fid = self.request.recv(16)
+			fid = self.request.recv(32)
 			partn = self.request.recv(8)
 			## get file
 			rid, rdata = self.server._client.db.Files.find_by(id=fid)[0]
@@ -370,4 +371,3 @@ class Uploader(BaseRequestHandler):
 		except:
 			print traceback.format_exc()
 		self.request.close()
-
