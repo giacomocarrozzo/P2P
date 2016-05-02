@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import traceback
+import os
 
 class Handler(object):
 	def __init__(self, db):
@@ -12,7 +13,7 @@ class Handler(object):
 			FCHU=self.index,
 			RPAD=self.downloaded
 		)
-	
+
 	def handle(self, request):
 		self.request = request
 		mode = request.recv(4)
@@ -23,11 +24,11 @@ class Handler(object):
 		except Exception as e:
 			print str(e)
 			return None
-		
+
 	def _sessionId(self):
 		import os, base64
 		return base64.urlsafe_b64encode(os.urandom(16))[:16]
-		
+
 	def login(self):
 		sid = "0"*16
 		try:
@@ -38,7 +39,7 @@ class Handler(object):
 		except Exception as e:
 			print str(e)
 		return "ALGI"+sid
-	
+
 	def logout(self):
 		try:
 			sid = self.request.recv(16) #sesionid del logout
@@ -86,8 +87,8 @@ class Handler(object):
 						urdata = self.db.Sessions.find_by(id=prow[1]["session"])[0][1]
 						if prow[1]["session"] not in sort.iterkeys():
 							sort[prow[1]["session"]] = dict(
-								ip=urdata["ip"], 
-								port=urdata["port"], 
+								ip=urdata["ip"],
+								port=urdata["port"],
 								parts=dict()
 							)
 						sort[prow[1]["session"]]["parts"][prow[1]["n"]] = 1
@@ -129,7 +130,7 @@ class Handler(object):
 					if len(file_parts)/my_parts > 1:
 						numdown += len(self.db.Parts.find_by(file=fid))
 						tot += 1
-						
+
 				if tot == len(userfiles):
 					print "tutti i tuoi file sonos stati scaricati, bye!"
 					#i file dell'utente sono di dominio pubblico
@@ -139,18 +140,18 @@ class Handler(object):
 					return "ALOG"+len_parts
 				else:
 					ret_num_down = str(numdown).zfill(10)
-					return "NLOG"+ret_num_down					
+					return "NLOG"+ret_num_down
 		except:
 			print traceback.print_exc()
 			print("exception in logout")
 
-		
+
 	def upload(self):
 		try:
 			sid, fid, flen, plen, fname = \
 				self.request.recv(16), self.request.recv(16), \
 				self.request.recv(10), self.request.recv(6), self.request.recv(100)
-			if self.db.Sessions.find_by(id=sid): 
+			if self.db.Sessions.find_by(id=sid):
 				if self.db.Files.find_by(id=fid):
 					return "AADR"+"0"*8
 				fname = fname.lower().replace(" ", "")
@@ -169,7 +170,7 @@ class Handler(object):
 		except:
 			print traceback.print_exc()
 		return None
-		
+
 	def search(self):
 		try:
 			sid, search = self.request.recv(16), self.request.recv(20)
@@ -186,7 +187,7 @@ class Handler(object):
 		except:
 			print traceback.print_exc()
 		return "ALOO000"
-	
+
 	def index(self):
 		try:
 			sid, fid = self.request.recv(16), self.request.recv(16)
@@ -201,8 +202,8 @@ class Handler(object):
 					urdata = self.db.Sessions.find_by(id=prow[1]["session"])[0][1]
 					if prow[1]["session"] not in sort.iterkeys():
 						sort[prow[1]["session"]] = dict(
-							ip=urdata["ip"], 
-							port=urdata["port"], 
+							ip=urdata["ip"],
+							port=urdata["port"],
 							parts=dict()
 						)
 					sort[prow[1]["session"]]["parts"][prow[1]["n"]] = 1
@@ -224,7 +225,7 @@ class Handler(object):
 		except:
 			print traceback.print_exc()
 		return "AFCH000"
-	
+
 	def downloaded(self):
 		try:
 			sid, fid, pnum = self.request.recv(16), self.request.recv(16), self.request.recv(8)
@@ -240,4 +241,3 @@ class Handler(object):
 		except:
 			print traceback.print_exc()
 		return "APAD00000000"
-

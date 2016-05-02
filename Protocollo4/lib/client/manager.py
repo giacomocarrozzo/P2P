@@ -14,11 +14,11 @@ class UploadServer(ThreadingMixIn, TCPServer):
 	daemonize = True
 	allow_reuse_address = True
 	address_family = socket.AF_INET6
-	
+
 	def __init__(self, server_address, client):
 		self._client = client
 		TCPServer.__init__(self, server_address, Uploader)
-		
+
 	#def server_bind(self):
 	#	self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
 	#	TCPServer.server_bind(self)
@@ -30,15 +30,15 @@ class RunnableThread(Thread):
 		self.isRunnable = True
 		self._client = client
 		client.threads.append(self)
-		
+
 	def stop(self):
 		self.isRunnable = False
-		
+
 	def run(self):
 		while self.isRunnable:
 			self.work()
 		self._client.threads.remove(self)
-		
+
 	def work(self):
 		time.sleep(5)
 
@@ -53,11 +53,11 @@ class UploadManager(RunnableThread):
 		self.s.listen(1)
 		RunnableThread.run(self)
 		self.s.close()
-		
+
 	def stop(self):
 		import sys
 		sys.exit()
-		
+
 	def work(self):
 		cs, caddr = self.s.accept()
 		msg_type = cs.recv(4)
@@ -70,7 +70,7 @@ class UploadManager(RunnableThread):
 class PartsChecker(RunnableThread):
 	def __init__(self, client):
 		RunnableThread.__init__(self, client)
-	
+
 	def work(self):
 		if len(self._client.context['downloading']):
 			for i in self._client.context['downloading']:
@@ -83,25 +83,25 @@ class UploadManager(RunnableThread):
 	def run(self):
 		self.server = UploadServer((self._client.address, self._client.port), self._client)
 		self.server.serve_forever()
-	
+
 	def stop(self):
 		self.server.shutdown()
-	
+
 
 class DownloadManager(RunnableThread):
 	def __init__(self, client):
 		RunnableThread.__init__(self, client)
 		self._client.context["down_queue"] = []
 		self._client.context["downloading"] = []
-		
+
 	@property
 	def downloads(self):
 		return self._client.context["downloading"]
-		
+
 	@property
 	def queue(self):
 		return self._client.context["down_queue"]
-	
+
 	def work(self):
 		if len(self.downloads) < 4 and self.queue:
 			c = 0
@@ -122,19 +122,19 @@ class Downloader(RunnableThread):
 		RunnableThread.__init__(self, client)
 		self.args = kwargs
 		self.LIMIT = 10
-	
+
 	@property
 	def indown(self):
 		return self._client.context["down_parts_"+self.args["fid"]]
-	
+
 	@property
 	def queue(self):
 		return self._client.context["down_queue_"+self.args["fid"]]
-	
+
 	@property
 	def childs(self):
 		return self._client.context["down_childs_"+self.args["fid"]]
-	
+
 	def run(self):
 		self.fdata = self._client.db.Files.find_by(id=self.args["fid"])[0][1]
 		self.enqueue()
@@ -145,26 +145,26 @@ class Downloader(RunnableThread):
 			if not self.childs:
 				import os
 				self._client.context["downloading"].remove(self.args["fid"])
-				f = open("temp/"+self.fdata["name"]+".part", "rb")
+				f = open(os.path.normcase("temp/"+self.fdata["name"]+".part"), "rb")
 				fdata = f.read()
 				f.close()
-				f = open("shared/"+self.fdata["name"], "wb+")
+				f = open(os.path.normcase("shared/"+self.fdata["name"]), "wb+")
 				f.write(fdata)
 				f.close()
-				os.remove("temp/"+self.fdata["name"]+".part")
+				os.remove(os.path.normcase("temp/"+self.fdata["name"]+".part"))
 				break
 			time.sleep(3)
-			
+
 	def enqueue(self):
 		numparts = self.fdata["parts"]
 		for i in range(0, int(numparts)):
 			self.queue.append(str(i))
 		print self.queue
-		pfile = open("temp/"+self.fdata["name"]+".part", "w+")
+		pfile = open(os.path.normcase("temp/"+self.fdata["name"]+".part"), "w+")
 		lines = "".zfill(int(self.fdata["size"]))
 		pfile.write(lines)
 		pfile.close()
-	
+
 	def work(self):
 		if not self.queue:
 			print "Finished file"
@@ -209,4 +209,3 @@ class Downloader(RunnableThread):
 				#self.queue.remove(p[0])
 		print self.indown
 		time.sleep(3)
-	

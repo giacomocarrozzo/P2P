@@ -49,9 +49,9 @@ class TrackerThread(CustomThread):
 				else:
 					print("received correct sessionid " + sessionid)
 					self._client.sessionid = sessionid
-					to_add = glob.glob("shared/*.*")
+					to_add = glob.glob(os.path.normcase("shared/*.*"))
 					for f in to_add:
-						filename_add = f.split("shared/")[1]
+						filename_add = f.split(os.path.normcase("shared/"))[1]
 						md5_add, size_add = self.calcMD5(filename_add)
 						print("about to add file with " + filename_add + md5_add + size_add)
 						self._addAfterLogin(name=filename_add,id=md5_add,size=size_add)
@@ -68,7 +68,7 @@ class TrackerThread(CustomThread):
 	def calcMD5(self, filename):
 		m = hashlib.md5()
 		#print os.path.getsize("shared/"+filename)
-		readFile = open(str("shared/"+filename) , "r")
+		readFile = open(str(os.path.normcase("shared/"+filename)) , "r")
 		text = readFile.readline()
 		while text:
 			m.update(text)
@@ -78,7 +78,7 @@ class TrackerThread(CustomThread):
 		digest = m.hexdigest()
 		#digest = digest[:16]
 		#import os, base64
-		fsize = str(os.path.getsize(str("shared/"+filename)))
+		fsize = str(os.path.getsize(str(os.path.normcase("shared/"+filename))))
 
 		#return (base64.urlsafe_b64encode(os.urandom(16))[:16], fsize)
 		return (digest, fsize)
@@ -243,9 +243,9 @@ class PeerThread(CustomThread):
 			#controllo lo status. se è 0 vado a leggere dentro tempo
 			status = rdata['status']
 			if not status:
-				f = open("shared/"+rdata["name"], "r")
+				f = open(os.path.normcase("shared/"+rdata["name"]), "r")
 			else:
-				f = open("temp/"+rdata["name"], "r")
+				f = open(os.path.normcase("temp/"+rdata["name"]), "r")
 			## read part
 			f.seek(256*KB*int(self.args["partn"]))
 			data = f.read(256*KB)
@@ -300,14 +300,14 @@ class PeerThread(CustomThread):
 					#		seek_parts += 1
 					#try:
 					#print "PARTN: "+str(partn)
-					pfile = open("temp/"+fname+".part", "r")
+					pfile = open(os.path.normcase("temp/"+fname+".part"), "r")
 					before = pfile.read()
 					pfile.close()
 					#print "LEN BEFORE: "+str(len(before))
 					#print "LEN FDATA: "+str(len(fdata))
 					#except:
 					#	before = ""
-					pfile = open("temp/"+fname+".part", "w")
+					pfile = open(os.path.normcase("temp/"+fname+".part"), "w")
 					try:
 						lines = before[0:int(partn)*256*KB]+fdata+before[(int(partn)+1)*256*KB:]
 					except:
@@ -347,9 +347,9 @@ class Uploader(BaseRequestHandler):
 			rid, rdata = self.server._client.db.Files.find_by(id=fid)[0]
 			status = rdata['status']
 			if status:
-				f = open("shared/"+rdata["name"], "rb")
+				f = open(os.path.normcase("shared/"+rdata["name"]), "rb")
 			else:
-				f = open("temp/"+rdata["name"]+".part", "rb")
+				f = open(os.path.normcase("temp/"+rdata["name"]+".part"), "rb")
 			#f = open("shared/"+rdata["name"], "rb")
 			## read part
 			f.seek(256*KB*int(partn))

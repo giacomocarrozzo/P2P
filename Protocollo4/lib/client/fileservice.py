@@ -28,7 +28,7 @@ class BackgroundService(threading.Thread):
 
 	def checkFiles(self):
 		#print("checking..")
-		temp = glob.glob("shared/*.*")
+		temp = glob.glob(os.path.normcase("shared/*.*"))
 		#to_remove = list(set(self.peer.context['files']) - set(temp))
 		to_add = list(set(temp) - set(self.peer.context['files']))
 		#if len(to_remove) > 0 :
@@ -40,7 +40,7 @@ class BackgroundService(threading.Thread):
 		if len(to_add) > 0:
 			print("FILES ADDED: " + str(to_add))
 			for f in to_add:
-				filename_add = f.split("shared/")[1]
+				filename_add = f.split(os.path.normcase("shared/"))[1]
 				md5_add, size_add = self.calcMD5(filename_add)
 				print("about to add file with " + filename_add + md5_add + size_add)
 				self.peer.add(name=filename_add,id=md5_add,size=size_add)
@@ -52,12 +52,12 @@ class BackgroundService(threading.Thread):
 
 	def storeMD5Files(self):
 
-		file_list = glob.glob("shared/*.*")
+		file_list = glob.glob(os.path.normcase("shared/*.*"))
 		self.peer.context['md5_files'] = dict()
 		self.peer.context['files_md5'] = dict()
 		self.peer.context['files_sizes'] = dict()
 		for f in file_list:
-			filename = f.split("shared/")[1]
+			filename = f.split(os.path.normcase("shared/"))[1]
 			md5, size = self.calcMD5(filename)
 			self.peer.context['md5_files'][str(filename)] = md5
 			self.peer.context['files_md5'][str(md5)] = filename
@@ -68,17 +68,17 @@ class BackgroundService(threading.Thread):
 	def calcMD5(self, filename):
 		m = hashlib.md5()
 		#print os.path.getsize("shared/"+filename)
-		readFile = open(str("shared/"+filename) , "r")
+		readFile = open(os.path.normcase(str(os.path.normcase("shared/"+filename))) , "r")
 		text = readFile.readline()
 		while text:
 			m.update(text)
 			text = readFile.readline()
-			
+
 		m.update(self._client.address)
 		digest = m.hexdigest()
 		#digest = digest[:32]
 		#import os, base64
-		fsize = str(os.path.getsize(str("shared/"+filename)))
+		fsize = str(os.path.getsize(str(os.path.normcase("shared/"+filename))))
 
 		#return (base64.urlsafe_b64encode(os.urandom(16))[:16], fsize)
 		return (digest, fsize)
