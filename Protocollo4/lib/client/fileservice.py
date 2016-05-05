@@ -20,7 +20,7 @@ class BackgroundService(threading.Thread):
 		self.retrieveFiles()
 		while self.canRun:
 			self.checkFiles()
-			time.sleep(30)
+			time.sleep(5)
 		return
 
 	def retrieveFiles(self):
@@ -28,6 +28,7 @@ class BackgroundService(threading.Thread):
 
 	def checkFiles(self):
 		#print("checking..")
+
 		temp = glob.glob(os.path.normcase("shared/*.*"))
 		#to_remove = list(set(self.peer.context['files']) - set(temp))
 		to_add = list(set(temp) - set(self.peer.context['files']))
@@ -73,8 +74,8 @@ class BackgroundService(threading.Thread):
 		while text:
 			m.update(text)
 			text = readFile.readline()
-
-		m.update(self._client.address)
+		print "ciao"+str(self.peer.address)
+		m.update(self.peer.address)
 		digest = m.hexdigest()
 		#digest = digest[:32]
 		#import os, base64
