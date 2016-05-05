@@ -20,7 +20,7 @@ class Client(object):
 		PartsChecker(self).start()
 		#self._upman = UploadServer((self.address, self.port), self)
 		#self._upman.serve_forever()
-		
+
 	def enqueue_download(self, fid):
 		self.context["down_queue"].append(fid)
 
@@ -30,7 +30,7 @@ class Client(object):
 		thread.join()
 		if not self.sessionid:
 			print "Exception"
-	
+
 	def logout(self):
 		thread = TrackerThread(self, "logout")
 		thread.start()
@@ -43,11 +43,9 @@ class Client(object):
 
 	def search(self, **kwargs):
 		TrackerThread(self, "search", **kwargs).start()
-		
+
 	def completeSearch(self, **kwargs):
 		TrackerThread(self, "peers", **kwargs).start()
-		
+
 	def downloadFile(self, **kwargs):
 		PeerThread(self, "download", **kwargs).start()
-		
-

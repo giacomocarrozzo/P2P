@@ -6,6 +6,7 @@ import os
 import hashlib
 from threading import Thread, RLock
 from SocketServer import BaseRequestHandler
+from ipv6utils import *
 
 KB = 1024
 lock = RLock()
@@ -17,7 +18,8 @@ class CustomThread(Thread):
 		self._method = method
 		self.args = kwargs
 		self.s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-		self.s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
+		self.s.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
+		#self.s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
 
 	def recv(self, lenght):
 		return self.s.recv(lenght)
@@ -32,7 +34,8 @@ class CustomThread(Thread):
 class TrackerThread(CustomThread):
 	def __send(self, msg):
 		if 1:
-			address_tracker6 = self._client.address.split("|")[1]
+			address6 = self._client.tracker[0].split("|")[1]
+			address_tracker6 = (address6,self._client.tracker[1])
 		self.s.connect(address_tracker6)
 		print("sending message: " + msg)
 		self.s.send(msg)

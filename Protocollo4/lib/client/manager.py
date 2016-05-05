@@ -17,7 +17,13 @@ class UploadServer(ThreadingMixIn, TCPServer):
 
 	def __init__(self, server_address, client):
 		self._client = client
-		TCPServer.__init__(self, server_address, Uploader)
+		if 1:
+			address6 = server_address[0].split("|")[1]
+			server_address6= (address6,server_address[1] )
+		print str(server_address6)
+
+		TCPServer.__init__(self, ('localhost',server_address6[1]), Uploader)
+		#TCPServer.__init__(self, server_address6, Uploader)
 
 	#def server_bind(self):
 	#	self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
