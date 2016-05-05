@@ -31,7 +31,9 @@ class CustomThread(Thread):
 
 class TrackerThread(CustomThread):
 	def __send(self, msg):
-		self.s.connect(self._client.tracker)
+		if 1:
+			address_tracker6 = self._client.address.split("|")[1]
+		self.s.connect(address_tracker6)
 		print("sending message: " + msg)
 		self.s.send(msg)
 
@@ -228,6 +230,8 @@ class TrackerThread(CustomThread):
 
 class PeerThread(CustomThread):
 	def __send(self, ip, port, msg):
+		if 1:
+			ip6 = ip.split("|")[1]
 		self.s.connect((ip, port))
 		print("sending message: " + msg)
 		self.s.send(msg)
