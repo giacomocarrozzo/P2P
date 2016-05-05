@@ -32,7 +32,7 @@ class Handler(object):
 	def login(self):
 		sid = "0"*16
 		try:
-			ip, port = self.request.recv(39), self.request.recv(5)
+			ip, port = self.request.recv(55), self.request.recv(5)
 			if not self.db.Sessions.find_by(ip=ip):
 				sid = self._sessionId()
 				self.db.Sessions.insert(id=sid, ip=ip, port=port)
@@ -148,9 +148,9 @@ class Handler(object):
 
 	def upload(self):
 		try:
-			sid, fid, flen, plen, fname = \
-				self.request.recv(16), self.request.recv(16), \
-				self.request.recv(10), self.request.recv(6), self.request.recv(100)
+			sid, flen, plen, fname, fid = \
+				self.request.recv(16), self.request.recv(10), \
+				self.request.recv(6), self.request.recv(100), self.request.recv(32)
 			if self.db.Sessions.find_by(id=sid):
 				if self.db.Files.find_by(id=fid):
 					return "AADR"+"0"*8
@@ -190,7 +190,7 @@ class Handler(object):
 
 	def index(self):
 		try:
-			sid, fid = self.request.recv(16), self.request.recv(16)
+			sid, fid = self.request.recv(16), self.request.recv(32)
 			if self.db.Sessions.find_by(id=sid):
 				sort = dict()
 				frid, frdata = self.db.Files.find_by(id=fid)[0]
@@ -228,7 +228,7 @@ class Handler(object):
 
 	def downloaded(self):
 		try:
-			sid, fid, pnum = self.request.recv(16), self.request.recv(16), self.request.recv(8)
+			sid, fid, pnum = self.request.recv(16), self.request.recv(32), self.request.recv(8)
 			if self.db.Sessions.find_by(id=sid):
 				frid = self.db.Files.find_by(id=fid)[0][0]
 				pn = int(pnum)
