@@ -3,6 +3,7 @@
 import time
 import random
 import socket
+import os
 from SocketServer import ThreadingMixIn, TCPServer
 from threading import Thread, RLock
 from .handlers import PeerThread, Uploader, TrackerThread
@@ -22,7 +23,7 @@ class UploadServer(ThreadingMixIn, TCPServer):
 			server_address6= (address6,server_address[1] )
 		print str(server_address6)
 
-		TCPServer.__init__(self, ('localhost',server_address6[1]), Uploader)
+		TCPServer.__init__(self, ("",server_address6[1]), Uploader)
 		#TCPServer.__init__(self, server_address6, Uploader)
 
 	#def server_bind(self):
@@ -143,6 +144,8 @@ class Downloader(RunnableThread):
 
 	def run(self):
 		self.fdata = self._client.db.Files.find_by(id=self.args["fid"])[0][1]
+		print("***Fdata***")
+		print(self.fdata)
 		self.enqueue()
 		## cycle until all child threads are launched
 		RunnableThread.run(self)

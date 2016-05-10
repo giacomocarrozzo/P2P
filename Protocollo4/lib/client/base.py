@@ -14,7 +14,7 @@ class Client(object):
 		self.db = db
 		self.context = dict()
 		self.threads = []
-		BackgroundService(self).start()
+		#BackgroundService(self).start()
 		UploadManager(self).start()
 		DownloadManager(self).start()
 		PartsChecker(self).start()
@@ -28,6 +28,7 @@ class Client(object):
 		thread = TrackerThread(self, "login")
 		thread.start()
 		thread.join()
+		BackgroundService(self).start()
 		if not self.sessionid:
 			print "Exception"
 

@@ -4,6 +4,7 @@ import traceback
 import glob
 import os
 import hashlib
+import random
 from threading import Thread, RLock
 from SocketServer import BaseRequestHandler
 from ipv6utils import *
@@ -17,9 +18,14 @@ class CustomThread(Thread):
 		self._client = client
 		self._method = method
 		self.args = kwargs
-		self.s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-		self.s.setsockopt(ipproto_ipv6(), ipproto_ipv6only(), False)
-		#self.s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)
+		if random.randint(0,1)==0:
+			self.s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+			address = self._client.tracker[0].split("|")[1]
+			self.address_tracker = (address,self._client.tracker[1],0,3)
+		else:
+			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			address = self._client.tracker[0].split("|")[0]
+			self.address_tracker = (address,self._client.tracker[1])
 
 	def recv(self, lenght):
 		return self.s.recv(lenght)
@@ -33,10 +39,7 @@ class CustomThread(Thread):
 
 class TrackerThread(CustomThread):
 	def __send(self, msg):
-		if 1:
-			address6 = self._client.tracker[0].split("|")[1]
-			address_tracker6 = (address6,self._client.tracker[1])
-		self.s.connect(address_tracker6)
+		self.s.connect(self.address_tracker)
 		print("sending message: " + msg)
 		self.s.send(msg)
 
@@ -135,7 +138,7 @@ class TrackerThread(CustomThread):
 					parts = self.recv(8)
 					print("BENE. " + parts)
 					#abbiamo correttamente aggiunto il file al tracker, mi salvo il file con status 1
-					self._client.db.Files.insert(id=fid, name=self.args["name"], parts=int(parts), status=1)
+					self._client.db.Files.insert(id=fid, name=self.args["name"], parts=int(parts), size=fsize, status=1)
 				else:
 					print("qualcosa è andato storto")
 			else:
