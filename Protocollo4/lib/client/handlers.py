@@ -250,10 +250,13 @@ class PeerThread(CustomThread):
 
 
 	def recv(self, lenght):
-		return self.sp.recv(lenght)
+		lock.acquire()
+		data=self.sp.recv(lenght)
+		lock.release()
+		return data
 
 	def __chuncks(self, l):
-		for i in xrange(0, len(l)):
+		for i in xrange(0, len(l), KB):
 			yield l[i:i+KB]
 
 	def _upload(self):
@@ -285,7 +288,7 @@ class PeerThread(CustomThread):
 
 	def _download(self):
 
-		print "porcamado "+self.args["ip"]
+		print "scarico da "+self.args["ip"]+" "+self.args["port"]+" parte "+self.args["part"]
 
 		ip, port = self.args["ip"], self.args["port"]
 		randomid, fname, partn = self.args["fid"], self.args["fname"], self.args["part"]
@@ -297,18 +300,8 @@ class PeerThread(CustomThread):
 			msg_type = self.recv(4)
 			fdata = ""
 
-			#teeeest
-			ftest = open(os.path.normcase("test/test.jpg"), "rb")
-			ftest.seek(256*KB*int(partn))
-			datatest = ftest.read(256*KB)
-			ftest.close()
-			chunkstest = [ctest for ctest in self.__chuncks(datatest)]
-			cnumtest = "0"*(6-len(str(len(chunkstest))))+str(len(chunkstest))
-			#teeeest end
-
 			if msg_type == "AREP":
 				numchunk = int(self.recv(6))
-				print "numchunk"+str(numchunk)
 				#for i in range(0, numchunk):
 				#	len_i = int(self.recv(5))
 				#	data = self.recv(len_i)
@@ -316,20 +309,16 @@ class PeerThread(CustomThread):
 				#print "received numchunk ", numchunk
 				for i in range(numchunk):
 					len_chunk = int(self.recv(5))
-					print "aaaaaaaaaaaaaaaaaaaaaa- len_chunk: "+str(len_chunk)
 					#if len_chunk > 0:
 					chunk = self.recv(len_chunk)
 						#f.write(chunk)
 						#print("downloading chunk " + str(len_chunk))
 					while len(chunk) < len_chunk:
-						print "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
 						new_data = self.recv(len_chunk-len(chunk))
 						chunk = chunk + new_data
 
-					if chunkstest[i]==chunk:
-						print i+" UGUALE!!"
-					else:
-						print i+" DIVERSO!!"
+						#print "ricevuto:"
+						#print str(chunk)
 
 					fdata += chunk
 				lock.acquire()
@@ -342,18 +331,19 @@ class PeerThread(CustomThread):
 					#		seek_parts += 1
 					#try:
 					#print "PARTN: "+str(partn)
-					pfile = open(os.path.normcase("temp/"+fname+".part"), "r")
+					pfile = open(os.path.normcase("temp/"+fname+".part"), "rb")
 					before = pfile.read()
 					pfile.close()
 					#print "LEN BEFORE: "+str(len(before))
 					#print "LEN FDATA: "+str(len(fdata))
 					#except:
 					#	before = ""
-					pfile = open(os.path.normcase("temp/"+fname+".part"), "w")
+					pfile = open(os.path.normcase("temp/"+fname+".part"), "wb")
 					try:
 						lines = before[0:int(partn)*256*KB]+fdata+before[(int(partn)+1)*256*KB:]
 					except:
 						lines = before[0:int(partn)*256*KB]+fdata
+					print "LUNGHEZZA DI LINES"+str(len(lines))
 					#print "LEN LINES: "+str(len(lines))
 					pfile.write(lines)
 					pfile.close()

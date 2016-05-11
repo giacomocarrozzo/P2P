@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#import time
+import time
 
 #marcello 192.168.043.128|fe80:0000:0000:0000:7a31:c1ff:fecd:7dae - 172.030.014.003|fc00:0000:0000:0000:0000:0000:0014:0003
 #enrico 192.168.043.196|fe80:0000:0000:0000:0226:b6ff:fe78:9cef - 172.030.014.001|fc00:0000:0000:0000:0000:0000:0014:0001
@@ -11,16 +11,18 @@ from lib.client.base import Client
 from lib.database import Database
 from lib.client.helpers import db_init
 
-HOST = "2001:0000:0000:0000:0000:0000:0000:000b"
-TRACKER = ("2001:0000:0000:0000:0000:0000:0000:000b" , int(3000))
+HOST = "192.168.043.179|fe80:0000:0000:0000:8046:4bbd:91ca:b484"
+TRACKER = ("192.168.043.113|fe80:0000:0000:0000:d253:49ff:fece:9247" , int(3000))
 
 if __name__ == "__main__":
 	db = Database()
 	db_init(db)
 	c = Client(HOST, TRACKER, db)
+
 	try:
 		c.login()
 		while True:
+			time.sleep(2)
 			print "\n"
 			print "################################"
 			print "                               #"

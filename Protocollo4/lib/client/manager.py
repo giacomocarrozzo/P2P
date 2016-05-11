@@ -21,7 +21,6 @@ class UploadServer(ThreadingMixIn, TCPServer):
 		if 1:
 			address6 = server_address[0].split("|")[1]
 			server_address6= (address6,server_address[1] )
-		print str(server_address6)
 
 		TCPServer.__init__(self, ("",server_address6[1]), Uploader)
 		#TCPServer.__init__(self, server_address6, Uploader)
@@ -211,6 +210,7 @@ class Downloader(RunnableThread):
 				pip = peer["ip"]
 				pport = peer["port"]
 				## lancio il thread
+				#print  "download "+str(pip)+" "+str(pport)+" "+str(randomid)+" "+str(data["name"])+" "+str(p[0])
 				self.childs.append(PeerThread(self._client, "download", ip=pip, port=pport, fid=randomid, fname=data["name"], part=p[0]))
 				self.childs[-1].start()
 				#print self.queue
