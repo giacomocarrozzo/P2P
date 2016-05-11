@@ -18,17 +18,6 @@ class CustomThread(Thread):
 		self._client = client
 		self._method = method
 		self.args = kwargs
-		if random.randint(0,1)==0:
-			self.s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-			address = self._client.tracker[0].split("|")[1]
-			self.address_tracker = (address,self._client.tracker[1],0,3)
-		else:
-			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			address = self._client.tracker[0].split("|")[0]
-			self.address_tracker = (address,self._client.tracker[1])
-
-	def recv(self, lenght):
-		return self.s.recv(lenght)
 
 	def run(self):
 		self.__getattribute__("_"+self._method)()
@@ -39,9 +28,20 @@ class CustomThread(Thread):
 
 class TrackerThread(CustomThread):
 	def __send(self, msg):
+		if random.randint(0,1)==0:
+			self.s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+			address = self._client.tracker[0].split("|")[1]
+			self.address_tracker = (address,self._client.tracker[1],0,5)
+		else:
+			self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			address = self._client.tracker[0].split("|")[0]
+			self.address_tracker = (address,self._client.tracker[1])
 		self.s.connect(self.address_tracker)
 		print("sending message: " + msg)
 		self.s.send(msg)
+
+	def recv(self, lenght):
+		return self.s.recv(lenght)
 
 	def _login(self):
 		try:
@@ -50,7 +50,7 @@ class TrackerThread(CustomThread):
 			self.__send(message)
 			msg_type = self.recv(4)
 			if msg_type == "ALGI":
-				print("ALGI received, reading sessionid")
+				#print("ALGI received, reading sessionid")
 				sessionid = self.recv(16)
 				if sessionid == "0000000000000000":
 					print("error in login received 0000000000000000")
@@ -236,11 +236,21 @@ class TrackerThread(CustomThread):
 
 class PeerThread(CustomThread):
 	def __send(self, ip, port, msg):
-		if 1:
-			ip6 = ip.split("|")[1]
-		self.s.connect((ip, port))
+		if random.randint(0,1)==0:
+			self.sp = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+			ip = ip.split("|")[1]
+			argspippo = (ip,port,0,5)
+		else:
+			self.sp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			ip = ip.split("|")[0]
+			argspippo = (ip,port)
+		self.sp.connect(argspippo)
 		print("sending message: " + msg)
-		self.s.send(msg)
+		self.sp.send(msg)
+
+
+	def recv(self, lenght):
+		return self.sp.recv(lenght)
 
 	def __chuncks(self, l):
 		for i in xrange(0, len(l)):
@@ -274,6 +284,9 @@ class PeerThread(CustomThread):
 		self.args["socket"].send(msg)
 
 	def _download(self):
+
+		print "porcamado "+self.args["ip"]
+
 		ip, port = self.args["ip"], self.args["port"]
 		randomid, fname, partn = self.args["fid"], self.args["fname"], self.args["part"]
 		to_down_temp = "0" * (8 - len(str(partn))) + str(partn)
@@ -283,8 +296,19 @@ class PeerThread(CustomThread):
 			##reading response from peer
 			msg_type = self.recv(4)
 			fdata = ""
+
+			#teeeest
+			ftest = open(os.path.normcase("test/test.jpg"), "rb")
+			ftest.seek(256*KB*int(partn))
+			datatest = ftest.read(256*KB)
+			ftest.close()
+			chunkstest = [ctest for ctest in self.__chuncks(datatest)]
+			cnumtest = "0"*(6-len(str(len(chunkstest))))+str(len(chunkstest))
+			#teeeest end
+
 			if msg_type == "AREP":
 				numchunk = int(self.recv(6))
+				print "numchunk"+str(numchunk)
 				#for i in range(0, numchunk):
 				#	len_i = int(self.recv(5))
 				#	data = self.recv(len_i)
@@ -292,13 +316,21 @@ class PeerThread(CustomThread):
 				#print "received numchunk ", numchunk
 				for i in range(numchunk):
 					len_chunk = int(self.recv(5))
+					print "aaaaaaaaaaaaaaaaaaaaaa- len_chunk: "+str(len_chunk)
 					#if len_chunk > 0:
 					chunk = self.recv(len_chunk)
 						#f.write(chunk)
 						#print("downloading chunk " + str(len_chunk))
 					while len(chunk) < len_chunk:
+						print "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
 						new_data = self.recv(len_chunk-len(chunk))
 						chunk = chunk + new_data
+
+					if chunkstest[i]==chunk:
+						print i+" UGUALE!!"
+					else:
+						print i+" DIVERSO!!"
+
 					fdata += chunk
 				lock.acquire()
 				if fdata:
