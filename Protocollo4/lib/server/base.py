@@ -30,16 +30,13 @@ class Server(ThreadingMixIn, TCPServer):
 	daemonize = True
 	allow_reuse_address = True
 	address_family = socket.AF_INET6
-	
-	def __init__(self, server_address1, handler):
+
+	def __init__(self, server_address, handler):
 		self._handler = handler
 		if 1:
-			print(server_address1[0] + "    |    " + str(server_address1[1]))
-			address6 = server_address1[0].split("|")[1]
-			server_address6 = (address6, server_address1[1])
+			server_address6 = server_address[0].split("|")[1]
 
-		print(server_address6)
-		TCPServer.__init__(self, ("",server_address6[1]), ServerHandler)
+		TCPServer.__init__(self, ("",server_address[1]), ServerHandler)
 
 	#def server_bind(self):
 	#	self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, False)

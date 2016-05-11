@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import traceback
 import os
+from threading import Thread, RLock
+
+lock = RLock()
 
 class Handler(object):
 	def __init__(self, db):
@@ -15,6 +18,8 @@ class Handler(object):
 		)
 
 	def handle(self, request):
+		lock.acquire()
+
 		self.request = request
 		mode = request.recv(4)
 		print "Handler::req mode is: "+mode
@@ -24,6 +29,9 @@ class Handler(object):
 		except Exception as e:
 			print str(e)
 			return None
+
+		finally:
+			lock.release()
 
 	def _sessionId(self):
 		import os, base64
@@ -161,11 +169,11 @@ class Handler(object):
 				if not plen:
 					raise Exception
 				res = flen/plen + 1 if flen%plen else flen/plen
-				print "Parts to store: "+str(res)
+				#print "Parts to store: "+str(res)
 				for i in range(0, res):
 					self.db.Parts.insert(file=rid, session=sid, n=str(i))
 				print self.db.Files._rows
-				print self.db.Parts._rows
+				#print self.db.Parts._rows
 				return "AADR"+"0"*(8-len(str(res)))+str(res)
 		except:
 			print traceback.print_exc()
