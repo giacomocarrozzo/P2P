@@ -47,6 +47,7 @@ class BackgroundService(threading.Thread):
 
 		self.peer.context["files"] = temp
 		self.storeMD5Files()
+		#print "lista: "+str(self.peer.context["files"])
 		#print("stored..")
 		#self.printFilesToList()
 

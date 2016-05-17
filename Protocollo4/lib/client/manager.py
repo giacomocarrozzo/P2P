@@ -180,6 +180,8 @@ class Downloader(RunnableThread):
 			f_id, f_data = self._client.db.Files.find_by(id=self.args['fid'])[0]
 			print "downloaded file, setting status to 1"
 			self._client.db.Files[f_id]['status'] = 1
+			self._client.context["files"].append(os.path.normcase("shared/"+f_data['name']))
+			print self._client.context["files"]
 			return
 		randomid = self.args["fid"]
 		data = self.fdata
@@ -196,6 +198,10 @@ class Downloader(RunnableThread):
 			peers = self._client.db.Peers.find_by(file=randomid)
 			for peerid, peerdata in peers:
 				partstr = peerdata["parts"]
+				print "old "+str(partstr)
+				partstr = "0"*(int(numparts)-len(partstr))+partstr
+				print "new "+str(partstr)
+
 				for key in parts_occ.iterkeys():
 					if partstr[int(key)] == "1":
 						parts_occ[key]["n"] += 1

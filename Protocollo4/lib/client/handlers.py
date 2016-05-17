@@ -130,7 +130,7 @@ class TrackerThread(CustomThread):
 				print("size" + str(fsize))
 				print("sessionid" + self._client.sessionid)
 				message = "ADDR" + self._client.sessionid + fsize + str(plen) + fname + fid
-				print("sending message " + message + " . " + str(len(message)))
+				#print("sending message " + message + " . " + str(len(message)))
 				self.__send(message)
 				msg_type = self.recv(4)
 				print("reading response from add file to tracker")
@@ -202,9 +202,9 @@ class TrackerThread(CustomThread):
 						address = self.recv(55)
 						port = self.recv(5)
 						partslist = self.recv(toread)
-						print repr(partslist)
-						print type(partslist), str(len(partslist))
-						print("partslist "+partslist)
+						#print repr(partslist)
+						#print type(partslist), str(len(partslist))
+						#print("partslist "+partslist)
 						final_parts = ""
 						for j in range(0, toread):
 							cell = format(ord(partslist[j]), "b")
@@ -229,7 +229,7 @@ class TrackerThread(CustomThread):
 				msg_type = self.recv(4)
 				if msg_type == "APAD":
 					nparts = self.recv(8)
-					print "numparts "+nparts
+					#print "numparts "+nparts
 		except:
 			print traceback.format_exc()
 
@@ -343,7 +343,7 @@ class PeerThread(CustomThread):
 						lines = before[0:int(partn)*256*KB]+fdata+before[(int(partn)+1)*256*KB:]
 					except:
 						lines = before[0:int(partn)*256*KB]+fdata
-					print "LUNGHEZZA DI LINES"+str(len(lines))
+					#print "LUNGHEZZA DI LINES"+str(len(lines))
 					#print "LEN LINES: "+str(len(lines))
 					pfile.write(lines)
 					pfile.close()
